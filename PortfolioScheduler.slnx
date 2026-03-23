@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PortfolioScheduler.Api/PortfolioScheduler.Api.csproj" />
+    <Project Path="src/PortfolioScheduler.Application/PortfolioScheduler.Application.csproj" Id="cf911174-b8d2-4e07-9fa5-275dd1bd0e09" />
+    <Project Path="src/PortfolioScheduler.Domain/PortfolioScheduler.Domain.csproj" Id="1cc686e5-c83a-463a-b580-2a695ec3827a" />
+    <Project Path="src/PortfolioScheduler.Infra/PortfolioScheduler.Infra.csproj" Id="adf02c66-1624-4445-bdb8-8fa36ed06b43" />
+  </Folder>
+</Solution>

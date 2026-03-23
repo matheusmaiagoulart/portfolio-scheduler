@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PortfolioScheduler.Application": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\matheus.maia.goulart\\OneDrive - Avanade\\Documentos\\Estudos Geral\\PortfolioScheduler\\src\\PortfolioScheduler.Api"
+    }
+  }
+}
