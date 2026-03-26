@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace PortfolioScheduler.Domain.Models
 {
     public class RecommendedPortfolio
@@ -14,7 +9,7 @@ namespace PortfolioScheduler.Domain.Models
         public DateTime CreatedAt { get; }
         public DateTime? TerminationDate {  get; }
 
-        public IReadOnlyCollection<PortfolioItem> PortfolioItems { get; private set; }
+        public ICollection<PortfolioItem> PortfolioItems { get; private set; }
 
         protected RecommendedPortfolio() { }
 

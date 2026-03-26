@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace PortfolioScheduler.Domain.Models
 {
     public class PurchaseOrder
@@ -18,6 +12,7 @@ namespace PortfolioScheduler.Domain.Models
         public DateTime ExecutionDate { get; }
 
         public BrokerageAccount BrokerageAccount { get; }
+        public ICollection<Delivery> Deliveries { get; }
 
         protected PurchaseOrder() { }
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace PortfolioScheduler.Domain.Models
 {
     public class AssetPrices
@@ -13,19 +8,19 @@ namespace PortfolioScheduler.Domain.Models
         public string Ticker { get; private set; }
         public decimal OpenPrice { get; private set; }
         public decimal ClosePrice { get; private set; }
-        public decimal HighPrice { get; private set; }
-        public decimal LowPrice { get; private set; }
+        public decimal MaxPrice { get; private set; }
+        public decimal MinPrice { get; private set; }
 
         protected AssetPrices() { }
 
-        public AssetPrices(DateTime tradingDate, string ticker, decimal openPrice, decimal closePrice, decimal highPrice, decimal lowPrice)
+        public AssetPrices(DateTime tradingDate, string ticker, decimal openPrice, decimal closePrice, decimal maxPrice, decimal minPrice)
         {
             TradingDate = tradingDate;
             Ticker = ticker;
             OpenPrice = openPrice;
             ClosePrice = closePrice;
-            HighPrice = highPrice;
-            LowPrice = lowPrice;
+            MaxPrice = maxPrice;
+            MinPrice = minPrice;
         }
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace PortfolioScheduler.Domain.Models
 {
     public class TaxEvent
@@ -11,18 +6,20 @@ namespace PortfolioScheduler.Domain.Models
         public long Id { get; }
         public long CustomerId { get; private set; }
         public TaxEventType Type { get; private set; }
-        public decimal Amount { get; private set; }
+        public decimal BaseValue { get; private set; }
+        public decimal TaxValue { get; private set; }
         public bool IsSent { get; private set; }
         public DateTime EventDate { get; private set; }
 
         public Customer Customer { get; private set; }
         protected TaxEvent() { }
 
-        public TaxEvent(long customerId, TaxEventType type, decimal amount)
+        public TaxEvent(long customerId, TaxEventType type, decimal baseValue, decimal taxValue)
         {
             CustomerId = customerId;
             Type = type;
-            Amount = amount;
+            BaseValue = baseValue;
+            TaxValue = taxValue;
             IsSent = false;
             EventDate = DateTime.Now;
         }

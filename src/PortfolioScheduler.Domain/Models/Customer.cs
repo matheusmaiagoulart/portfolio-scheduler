@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-
+﻿
 namespace PortfolioScheduler.Domain.Models
 {
     public class Customer
@@ -12,6 +11,8 @@ namespace PortfolioScheduler.Domain.Models
         public bool Active { get; private set; }
         public DateTime JoiningDate { get; }
 
+        public ICollection<PortfolioRebalance> PortfolioRebalances { get; }
+        public ICollection<TaxEvent> TaxEvents { get; }
         protected Customer() { }
         public Customer(string name, string cpf, string email, decimal monthlyAmount)
         {

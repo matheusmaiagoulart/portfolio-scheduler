@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace PortfolioScheduler.Domain.Models
 {
     public class BrokerageAccount
@@ -12,13 +6,14 @@ namespace PortfolioScheduler.Domain.Models
         public long Id { get; }
         public long CustomerId { get; private set; }
         public String AccountNumber { get; private set; }
-        public BrokarageAccountType AccountType { get; private set; }
+        public BrokerageAccountType AccountType { get; private set; }
         public DateTime CreatedAt { get; }
 
         public Customer Customer { get; }
+        public ICollection<Custody> Custodies { get; }
 
         protected BrokerageAccount() { }
-        public BrokerageAccount(long customerId, string accountNumber, BrokarageAccountType accountType)
+        public BrokerageAccount(long customerId, string accountNumber, BrokerageAccountType accountType)
         {
             CustomerId = customerId;
             AccountNumber = accountNumber;
@@ -27,7 +22,7 @@ namespace PortfolioScheduler.Domain.Models
         }
     }
 
-    public enum BrokarageAccountType
+    public enum BrokerageAccountType
     {
         MASTER,
         CLIENT // Conta do cliente (Filhote)
