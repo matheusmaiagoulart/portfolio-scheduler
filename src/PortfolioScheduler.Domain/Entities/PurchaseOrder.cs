@@ -1,10 +1,9 @@
 ﻿namespace PortfolioScheduler.Domain.Entities;
-
 public class PurchaseOrder
 {
     public long Id { get; }
     public long MasterAccountId { get; private set; }
-    public String Ticker { get; private set; }
+    public string Ticker { get; private set; }
     public int Quantity { get; private set; }
     public decimal UnitPrice { get; private set; }
     public MarketType MarketType { get; private set; }

@@ -33,7 +33,7 @@ public class Customer
 
         if (string.IsNullOrWhiteSpace(cpf)) return Result.Fail("CPF can't be null.");
 
-        if (monthlyAmount.CompareTo(Decimal.Zero) < 0) return Result.Fail("Monthly amount must be positive.");
+        if (monthlyAmount.CompareTo(new Decimal(100)) < 0) return Result.Fail("Monthly amount must be greater than 100.");
 
         return Result.Ok(new Customer(name, cpf, email, monthlyAmount));
     }

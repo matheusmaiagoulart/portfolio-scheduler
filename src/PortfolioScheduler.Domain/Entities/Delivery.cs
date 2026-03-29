@@ -1,5 +1,4 @@
 ﻿namespace PortfolioScheduler.Domain.Entities;
-
 public class Delivery
 {
     public long Id { get; }

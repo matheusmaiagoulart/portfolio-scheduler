@@ -1,5 +1,4 @@
 ﻿namespace PortfolioScheduler.Domain.Entities;
-
 public class PortfolioItem
 {
     public long Id { get; }

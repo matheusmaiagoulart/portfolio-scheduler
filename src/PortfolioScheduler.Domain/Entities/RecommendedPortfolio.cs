@@ -1,5 +1,4 @@
 ﻿namespace PortfolioScheduler.Domain.Entities;
-
 public class RecommendedPortfolio
 {
     public long Id { get; }

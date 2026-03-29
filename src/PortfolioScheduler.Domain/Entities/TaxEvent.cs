@@ -1,5 +1,4 @@
 ﻿namespace PortfolioScheduler.Domain.Entities;
-
 public class TaxEvent
 {
     public long Id { get; }

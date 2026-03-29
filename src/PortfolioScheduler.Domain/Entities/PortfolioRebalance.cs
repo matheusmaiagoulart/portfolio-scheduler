@@ -1,5 +1,4 @@
 ﻿namespace PortfolioScheduler.Domain.Entities;
-
 public class PortfolioRebalance
 {
     public long Id { get; }
