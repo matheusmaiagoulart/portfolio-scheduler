@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PortfolioScheduler.Domain.Models;
+using PortfolioScheduler.Domain.Entities;
 
 namespace PortfolioScheduler.Infra.Data.MappingTables
 {
@@ -10,11 +10,6 @@ namespace PortfolioScheduler.Infra.Data.MappingTables
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
-
-            entity.HasOne(e => e.Customer)
-                .WithMany(c => c.PortfolioRebalances)
-                .HasForeignKey(e => e.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             entity.Property(e => e.RebalanceType).IsRequired().HasConversion<string>();
             entity.Property(e => e.SoldTicker).IsRequired().HasMaxLength(10);

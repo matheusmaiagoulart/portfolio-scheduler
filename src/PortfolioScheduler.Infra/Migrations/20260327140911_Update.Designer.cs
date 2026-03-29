@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PortfolioScheduler.Infra.Data.Context;
 
@@ -11,9 +12,11 @@ using PortfolioScheduler.Infra.Data.Context;
 namespace PortfolioScheduler.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260327140911_Update")]
+    partial class Update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,6 +166,7 @@ namespace PortfolioScheduler.Infra.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Active")
+                        .IsUnique()
                         .HasDatabaseName("IX_Customers_Active");
 
                     b.HasIndex("Cpf")

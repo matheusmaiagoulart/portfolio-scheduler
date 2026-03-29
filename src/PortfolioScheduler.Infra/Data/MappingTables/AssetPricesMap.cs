@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PortfolioScheduler.Domain.Models;
+using PortfolioScheduler.Domain.Entities;
 
 namespace PortfolioScheduler.Infra.Data.MappingTables
 {

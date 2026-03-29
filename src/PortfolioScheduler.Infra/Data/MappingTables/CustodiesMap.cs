@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PortfolioScheduler.Domain.Models;
+using PortfolioScheduler.Domain.Entities;
 
 namespace PortfolioScheduler.Infra.Data.MappingTables
 {
@@ -16,11 +16,6 @@ namespace PortfolioScheduler.Infra.Data.MappingTables
             entity.Property(e => e.Quantity).IsRequired().HasColumnType("int");
             entity.Property(e => e.AveragePrice).IsRequired().HasColumnType("decimal(18,2)");
             entity.Property(e => e.LastUpdate).IsRequired().HasColumnType("datetime");
-
-            entity.HasOne(c => c.BrokerageAccount)
-                .WithMany(a => a.Custodies)
-                .HasForeignKey(c => c.BrokerageAccountId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // Indexes for performance
             entity.HasIndex(e => e.BrokerageAccountId).HasDatabaseName("IX_Custodies_BrokerageAccountId");

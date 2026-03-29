@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PortfolioScheduler.Domain.Models;
+using PortfolioScheduler.Domain.Entities;
+using PortfolioScheduler.Domain.Entities;
 
 namespace PortfolioScheduler.Infra.Data.Context
 {

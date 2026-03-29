@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PortfolioScheduler.Domain.Models;
+using PortfolioScheduler.Domain.Entities;
 
 namespace PortfolioScheduler.Infra.Data.MappingTables
 {
@@ -11,13 +11,8 @@ namespace PortfolioScheduler.Infra.Data.MappingTables
             entity.HasKey(e => e.Id); // Primary Key
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
-            entity.HasOne(e => e.Customer)
-                .WithOne()
-                .HasForeignKey<BrokerageAccount>(e => e.CustomerId) // Foreign Key to Customer
-                .OnDelete(DeleteBehavior.Restrict);
-
             entity.HasMany(e => e.Custodies)
-                .WithOne(e => e.BrokerageAccount)
+                .WithOne()
                 .HasForeignKey(e => e.BrokerageAccountId)
                 .OnDelete(DeleteBehavior.Restrict);
 

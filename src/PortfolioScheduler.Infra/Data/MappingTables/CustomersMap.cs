@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PortfolioScheduler.Domain.Models;
+using PortfolioScheduler.Domain.Entities;
 
 namespace PortfolioScheduler.Infra.Data.MappingTables
 {
@@ -11,6 +11,11 @@ namespace PortfolioScheduler.Infra.Data.MappingTables
             entity.HasKey(e => e.Id); // Primary Key
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
+            entity.HasOne(e => e.BrokerageAccount)
+                .WithOne()
+                .HasForeignKey<BrokerageAccount>(b => b.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Cpf).IsRequired().HasMaxLength(11).IsUnicode(true);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
@@ -19,10 +24,9 @@ namespace PortfolioScheduler.Infra.Data.MappingTables
             entity.Property(e => e.JoiningDate).IsRequired();
 
             // Indexes for performance
-
             entity.HasIndex(e => e.Cpf).IsUnique().HasDatabaseName("IX_Customers_Cpf");
             entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("IX_Customers_Email");
-            entity.HasIndex(e => e.Active).IsUnique().HasDatabaseName("IX_Customers_Active");
+            entity.HasIndex(e => e.Active).HasDatabaseName("IX_Customers_Active");
 
             entity.ToTable("Customers");
         }
