@@ -1,30 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PortfolioScheduler.Domain.Models;
+using PortfolioScheduler.Domain.Entities;
 
-namespace PortfolioScheduler.Infra.Data.MappingTables
+namespace PortfolioScheduler.Infra.Data.MappingTables;
+
+public class CustomersMap : IEntityTypeConfiguration<Customer>
 {
-    public class CustomersMap : IEntityTypeConfiguration<Customer>
+    public void Configure(EntityTypeBuilder<Customer> entity)
     {
-        public void Configure(EntityTypeBuilder<Customer> entity)
-        {
-            entity.HasKey(e => e.Id); // Primary Key
-            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+        entity.HasKey(e => e.Id); // Primary Key
+        entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Cpf).IsRequired().HasMaxLength(11).IsUnicode(true);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.MonthlyAmount).IsRequired().HasPrecision(18, 2);
-            entity.Property(e => e.Active).IsRequired();
-            entity.Property(e => e.JoiningDate).IsRequired();
+        entity.HasOne(e => e.BrokerageAccount)
+            .WithOne()
+            .HasForeignKey<BrokerageAccount>(b => b.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-            // Indexes for performance
+        entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        entity.Property(e => e.Cpf).IsRequired().HasMaxLength(11).IsUnicode(true);
+        entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+        entity.Property(e => e.MonthlyAmount).IsRequired().HasPrecision(18, 2);
+        entity.Property(e => e.Active).IsRequired();
+        entity.Property(e => e.JoiningDate).IsRequired();
 
-            entity.HasIndex(e => e.Cpf).IsUnique().HasDatabaseName("IX_Customers_Cpf");
-            entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("IX_Customers_Email");
-            entity.HasIndex(e => e.Active).IsUnique().HasDatabaseName("IX_Customers_Active");
+        // Indexes for performance
+        entity.HasIndex(e => e.Cpf).IsUnique().HasDatabaseName("IX_Customers_Cpf");
+        entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("IX_Customers_Email");
+        entity.HasIndex(e => e.Active).HasDatabaseName("IX_Customers_Active");
 
-            entity.ToTable("Customers");
-        }
+        entity.ToTable("Customers");
     }
 }
