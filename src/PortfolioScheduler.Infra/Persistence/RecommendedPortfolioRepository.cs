@@ -43,6 +43,6 @@ public class RecommendedPortfolioRepository : IRecommendedPortfolioRepository
 
     public void Update(RecommendedPortfolio recommendedPortfolio)
     {
-        throw new NotImplementedException();
+        _context.RecommendedPortfolios.Update(recommendedPortfolio);
     }
 }
