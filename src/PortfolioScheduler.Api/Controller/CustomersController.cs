@@ -19,6 +19,6 @@ public class CustomersController : ControllerBase
     public async Task<IActionResult> RegisterCustomerSubscriber(RegisterCustomerSubscriberCommand request)
     {
         var result = await _mediator.Send(request);
-        return result.ValidateResult(this);
+        return result.ValidateResult(this, 201);
     }
 }
