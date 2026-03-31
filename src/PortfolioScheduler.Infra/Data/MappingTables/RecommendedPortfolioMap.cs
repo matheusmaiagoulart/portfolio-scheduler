@@ -17,6 +17,10 @@ public class RecommendedPortfolioMap : IEntityTypeConfiguration<RecommendedPortf
             .HasForeignKey(e => e.RecommendedPortfolioId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        entity.Metadata
+            .FindNavigation(nameof(RecommendedPortfolio.Items))!
+            .SetField("_portfolioItems");
+
         entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
         entity.Property(e => e.Active).IsRequired();
         entity.Property(e => e.CreatedAt).IsRequired();
