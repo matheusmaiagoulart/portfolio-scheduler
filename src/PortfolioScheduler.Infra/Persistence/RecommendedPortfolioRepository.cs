@@ -24,6 +24,13 @@ public class RecommendedPortfolioRepository : IRecommendedPortfolioRepository
         return await _context.RecommendedPortfolios.FindAsync(id, ct);
     }
 
+    public async Task<RecommendedPortfolio> GetRecommendedPortfolioActive(CancellationToken ct)
+    {
+        return await _context.RecommendedPortfolios
+            .Include(x => x.Items)
+            .FirstOrDefaultAsync(x => x.Active, ct);
+    }
+
     public async Task<Result> SaveChangesAsync(long portfolioId, CancellationToken ct)
     {
         try
