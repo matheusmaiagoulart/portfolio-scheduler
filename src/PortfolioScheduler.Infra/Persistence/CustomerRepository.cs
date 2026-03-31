@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Microsoft.EntityFrameworkCore;
+using PortfolioScheduler.Domain.DomainErrors;
 using PortfolioScheduler.Domain.Entities;
 using PortfolioScheduler.Domain.Repositories;
 using PortfolioScheduler.Infra.Data.Context;
@@ -36,10 +37,10 @@ public class CustomerRepository : ICustomerRepository
             var errorMessage = ex.InnerException?.Message;
 
             if (errorMessage.Contains("IX_Customers_Cpf"))
-                return Result.Fail("A Customer with the same CPF already exists.");
+                return Result.Fail(CustomerError.DuplicatedCpf());
 
             if (errorMessage.Contains("IX_Customers_Email"))
-                return Result.Fail("A Customer with the same Email already exists.");
+                return Result.Fail(CustomerError.DuplicatedEmail());
 
             return Result.Fail("An error occurred while saving changes to the database.");
         }
