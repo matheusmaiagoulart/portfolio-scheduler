@@ -20,6 +20,6 @@ public class PortfoliosController : ControllerBase
     public async Task<IActionResult> CreateRecommendedPortfolio(CreateRecommendedPortfolioCommand request)
     {
         var result = await _mediator.Send(request);
-        return result.ValidateResult(this);
+        return result.ValidateResult(this, 201);
     }
 }
