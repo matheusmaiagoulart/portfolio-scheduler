@@ -19,6 +19,7 @@ public static class DependencyInjection
 
         // Repositories
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IRecommendedPortfolioRepository, RecommendedPortfolioRepository>();
 
         return services;
     }

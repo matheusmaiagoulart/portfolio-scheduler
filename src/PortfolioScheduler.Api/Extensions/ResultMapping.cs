@@ -10,16 +10,20 @@ public static class ResultMapping
         if (result.IsSuccess)
             return controller.Ok(result.Value);
 
-        var errors = new { errors = result.Errors.Select(e => e.Message) };
+        var error = result.Errors.First();
+        var statusCode = error.Metadata.TryGetValue("statusCode", out var code) ? (int)code : 500;
 
-        var firstErrorMessage = result.Errors.First().Message;
+        return controller.StatusCode(statusCode, new { error = error.Message });
+    }
 
-        if (firstErrorMessage.Contains("CPF", StringComparison.OrdinalIgnoreCase) ||
-            firstErrorMessage.Contains("Email", StringComparison.OrdinalIgnoreCase))
-        {
-            return controller.Conflict(errors);
-        }
+    public static IActionResult ToActionResult(this Result result, ControllerBase controller)
+    {
+        if (result.IsSuccess)
+            return controller.Ok();
 
-        return controller.StatusCode(500, errors);
+        var error = result.Errors.First();
+        var statusCode = error.Metadata.TryGetValue("statusCode", out var code) ? (int)code : 500;
+
+        return controller.StatusCode(statusCode, new { error = error.Message });
     }
 }
