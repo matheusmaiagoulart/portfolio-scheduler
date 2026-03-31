@@ -1,4 +1,6 @@
-﻿namespace PortfolioScheduler.Domain.Entities;
+﻿using FluentResults;
+
+namespace PortfolioScheduler.Domain.Entities;
 
 public class BrokerageAccount
 {
@@ -18,6 +20,20 @@ public class BrokerageAccount
         AccountNumber = GeneratedAccountNumber();
         AccountType = accountType;
         CreatedAt = DateTime.Now;
+    }
+
+    public Result CreateInitialCustodies(IEnumerable<PortfolioItem> portfolioItems)
+    {
+        if (portfolioItems == null || !portfolioItems.Any())
+            return Result.Fail("Portfolio items cannot be null or empty.");
+
+        var custodies = portfolioItems
+            .Select(item => new Custody(item.Ticker, 0, 0))
+            .ToList();
+
+        _custodies.AddRange(custodies);
+
+        return Result.Ok();
     }
 
     private string GeneratedAccountNumber()
