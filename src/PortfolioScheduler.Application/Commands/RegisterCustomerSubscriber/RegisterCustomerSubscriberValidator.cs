@@ -13,7 +13,7 @@ public class RegisterCustomerSubscriberValidator : AbstractValidator<RegisterCus
         RuleFor(x => x.Cpf)
             .NotEmpty().WithMessage("CPF is required. Can't be empty or null.")
             .Must(c => c.All(char.IsDigit)).WithMessage("CPF must contain only digits.")
-            .MaximumLength(11).WithMessage("CPF can't exceed 11 characters.");
+            .Length(11).WithMessage("CPF must have 11 characters.");
 
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required. Can't be empty or null.")
