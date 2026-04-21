@@ -30,7 +30,7 @@ public class AssetPricesRepository : IAssetPricesRepository
     /// <summary>
     /// If the trading date already has registered asset prices, it will not save changes to avoid duplicates. 
     /// Otherwise, it will save the new asset prices to the database.
-    /// </summary
+    /// </summary>
     public async Task<Result> SaveChangesAsync(IEnumerable<AssetPrices> assetPrices, CancellationToken ct)
     {
         try
