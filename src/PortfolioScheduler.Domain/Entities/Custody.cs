@@ -18,4 +18,28 @@ public class Custody
         AveragePrice = averagePrice;
         LastUpdate = DateTime.UtcNow;
     }
+
+    public void AddPurchaseQuantity(int quantity, decimal newPrice)
+    {
+        UpdateAveragePrice(newPrice, quantity);
+        Quantity += quantity;
+        UpdateLastUpdate();
+    }
+
+    public void UpdateResidualQuantity(int quantity, decimal newPrice)
+    {
+        Quantity = quantity;
+        UpdateAveragePrice(newPrice, quantity);
+        UpdateLastUpdate();
+    }
+
+    private void UpdateLastUpdate()
+    {
+        LastUpdate = DateTime.Now;
+    }
+    
+    private void UpdateAveragePrice(decimal newPrice, int newQuantity)
+    {
+       AveragePrice = (Quantity * AveragePrice + newQuantity * newPrice) / (Quantity + newQuantity);
+    }
 }
