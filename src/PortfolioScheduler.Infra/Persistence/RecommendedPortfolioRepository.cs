@@ -37,7 +37,9 @@ public class RecommendedPortfolioRepository : IRecommendedPortfolioRepository
         {
             await _context.RecommendedPortfolios
                 .Where(x => x.Active && x.Id != portfolioId)
-                .ExecuteUpdateAsync(x => x.SetProperty(p => p.Active, false), ct);
+                .ExecuteUpdateAsync(x => x
+                .SetProperty(p => p.Active, false)
+                .SetProperty(x => x.TerminationDate, DateTime.UtcNow), ct);
 
             await _context.SaveChangesAsync(ct);
             return Result.Ok();

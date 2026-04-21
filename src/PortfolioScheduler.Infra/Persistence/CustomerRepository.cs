@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PortfolioScheduler.Domain.DomainErrors;
 using PortfolioScheduler.Domain.Entities;
 using PortfolioScheduler.Domain.Repositories;
+using PortfolioScheduler.Domain.Services.DTOs;
 using PortfolioScheduler.Infra.Data.Context;
 
 namespace PortfolioScheduler.Infra.Persistence;
@@ -22,7 +23,57 @@ public class CustomerRepository : ICustomerRepository
 
     public async Task<Customer> GetByIdAsync(long id, CancellationToken ct)
     {
-        return await _context.Customers.FindAsync(id, ct);
+        return await _context.Customers
+            .Include(c => c.BrokerageAccount)
+            .ThenInclude(b => b.Custodies)
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
+    }
+
+    public async Task<decimal> GetOneThirdAmountOfAllActiveCustomersAsync(CancellationToken ct)
+    {
+        var customers = await _context.Customers
+        .Where(c => c.Active && c.BrokerageAccount.Id != 1)
+        .Include(c => c.BrokerageAccount)
+        .ThenInclude(b => b.Custodies)
+        .ToListAsync(ct);
+
+        return Math.Round(customers.Sum(c => c.MonthlyAmount) / 3m, 2);
+
+        //var custodiesPerCustomer = customers.ToDictionary(
+        //    keySelector: c => c.BrokerageAccount.Id,
+        //    elementSelector: c => new CustodyPurchaseDataDTO
+        //    {
+        //        CustomerId = c.Id,
+        //        FullName = c.Name,
+        //        BrokerageAccountId = c.BrokerageAccount.Id,
+        //        ThirdPartyBalance = Math.Round(c.MonthlyAmount / 3m, 2),
+        //        CustomerCustodies = c.BrokerageAccount.Custodies
+        //    });
+
+        //return new PurchaseRoundDataDTO(thridOfTotalAmount);
+    }
+    
+    public async Task<Dictionary<long, CustodyPurchaseDataDTO>> GetChunkOfCustomerAsync(int chunkSize, long lastId, CancellationToken ct)
+    {
+        var batch = await _context.Customers
+            .Where(c => c.Active && c.BrokerageAccount.Id != 1 && c.Id > lastId)
+            .Take(chunkSize)
+            .Include(c => c.BrokerageAccount)
+            .ThenInclude(b => b.Custodies)
+            .ToListAsync(ct);
+
+        var custodiesPerCustomer = batch.ToDictionary(
+            keySelector: c => c.BrokerageAccount.Id,
+            elementSelector: c => new CustodyPurchaseDataDTO
+            {
+                CustomerId = c.Id,
+                FullName = c.Name,
+                BrokerageAccountId = c.BrokerageAccount.Id,
+                ThirdPartyBalance = Math.Round(c.MonthlyAmount / 3m, 2),
+                CustomerCustodies = c.BrokerageAccount.Custodies
+            });
+
+        return custodiesPerCustomer;
     }
 
     public async Task<Result> SaveChangesAsync(CancellationToken ct)
@@ -37,10 +88,10 @@ public class CustomerRepository : ICustomerRepository
             var errorMessage = ex.InnerException?.Message;
 
             if (errorMessage.Contains("IX_Customers_Cpf"))
-                return Result.Fail(CustomerError.DuplicatedCpf());
+                return Result.Fail(CustomerErrors.DuplicatedCpf());
 
             if (errorMessage.Contains("IX_Customers_Email"))
-                return Result.Fail(CustomerError.DuplicatedEmail());
+                return Result.Fail(CustomerErrors.DuplicatedEmail());
 
             return Result.Fail("An error occurred while saving changes to the database.");
         }

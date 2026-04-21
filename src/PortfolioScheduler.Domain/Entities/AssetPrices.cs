@@ -12,7 +12,7 @@ public class AssetPrices
 
     protected AssetPrices() { }
 
-    public AssetPrices(DateTime tradingDate, string ticker, decimal openPrice, decimal closePrice, decimal maxPrice, decimal minPrice)
+    private AssetPrices(DateTime tradingDate, string ticker, decimal openPrice, decimal closePrice, decimal maxPrice, decimal minPrice)
     {
         TradingDate = tradingDate;
         Ticker = ticker;
@@ -20,5 +20,10 @@ public class AssetPrices
         ClosePrice = closePrice;
         MaxPrice = maxPrice;
         MinPrice = minPrice;
+    }
+
+    public static AssetPrices CreateAssetPrice(DateTime tradingDate, string ticker, decimal openPrice, decimal closePrice, decimal maxPrice, decimal minPrice)
+    {
+        return new AssetPrices(tradingDate, ticker, openPrice, closePrice, maxPrice, minPrice);
     }
 }

@@ -16,6 +16,17 @@ public class CustomersMap : IEntityTypeConfiguration<Customer>
             .HasForeignKey<BrokerageAccount>(b => b.CustomerId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        entity.HasData(new
+        {
+            Id = 1L,
+            Name = "CORRETORA - CONTA MASTER",
+            Cpf = "00000000000",
+            Email = "master@itaucorretora.com.br",
+            MonthlyAmount = 0m,
+            Active = true,
+            JoiningDate = new DateTime(2026, 1, 1)
+        });
+
         entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
         entity.Property(e => e.Cpf).IsRequired().HasMaxLength(11).IsUnicode(true);
         entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
