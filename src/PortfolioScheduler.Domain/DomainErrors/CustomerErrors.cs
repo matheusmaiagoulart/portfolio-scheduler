@@ -3,7 +3,7 @@ using System.Net;
 
 namespace PortfolioScheduler.Domain.DomainErrors;
 
-public static class CustomerError
+public static class CustomerErrors
 {
     public static Error DuplicatedCpf() => 
         new Error("A Customer with the same CPF already exists.").WithMetadata("statusCode", HttpStatusCode.Conflict);
