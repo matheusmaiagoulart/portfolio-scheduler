@@ -16,6 +16,15 @@ public class BrokerageAccountsMap : IEntityTypeConfiguration<BrokerageAccount>
             .HasForeignKey(e => e.BrokerageAccountId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        entity.HasData(new
+        {
+            Id = 1L,
+            CustomerId = 1L,
+            AccountNumber = "MASTER-ACCOUNT-0001",
+            AccountType = BrokerageAccountType.MASTER,
+            CreatedAt = new DateTime(2026, 1, 1)
+        });
+
         entity.Property(e => e.CustomerId).IsRequired();
         entity.Property(e => e.AccountNumber).IsRequired().IsUnicode(true);
         entity.Property(e => e.AccountType).IsRequired().HasConversion<string>();
