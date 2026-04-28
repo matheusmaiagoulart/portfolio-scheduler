@@ -1,27 +1,28 @@
-﻿using FluentResults;
-using MediatR;
+﻿using MediatR;
+using FluentResults;
 using PortfolioScheduler.Domain.DomainErrors;
 using PortfolioScheduler.Domain.Entities;
 using PortfolioScheduler.Domain.Repositories;
 using PortfolioScheduler.Domain.Services.DTOs;
 using PortfolioScheduler.Domain.Services.Interfaces;
-using static PortfolioScheduler.Domain.Services.DTOs.DistributionResultDTO;
 
 namespace PortfolioScheduler.Application.Commands.ExecutePortfolioPurchase;
 
 public class ExecutePortfolioPurchaseHandler : IRequestHandler<ExecutePortfolioPurchaseCommand, Result<ExecutePortfolioPurchaseResponse>>
 {
     private readonly ICustomerRepository _customerRepository;
-    private readonly IPortfolioDistribuition _portfolioDistribuition;
+    private readonly IDeliveryRepository _deliveryRepository;
+    private readonly IPortfolioDistribution _portfolioDistribution;
     private readonly IPurchaseOrdersRepository _purchaseOrdersRepository;
     private readonly IPurchaseQuotesCalculator _purchaseQuotesCalculator;
     private readonly IRecommendedPortfolioRepository _recommendedPortfolioRepository;
 
-    public ExecutePortfolioPurchaseHandler(ICustomerRepository customerRepository, IPurchaseOrdersRepository purchaseOrdersRepository, IPurchaseQuotesCalculator quotesCalculator, IRecommendedPortfolioRepository recommendedPortfolioRepository, IPortfolioDistribuition portfolioDistribuition)
+    public ExecutePortfolioPurchaseHandler(ICustomerRepository customerRepository, IPurchaseOrdersRepository purchaseOrdersRepository, IPurchaseQuotesCalculator quotesCalculator, IRecommendedPortfolioRepository recommendedPortfolioRepository, IPortfolioDistribution portfolioDistribution, IDeliveryRepository deliveryRepository)
     {
         _customerRepository = customerRepository;
+        _deliveryRepository = deliveryRepository;
         _purchaseQuotesCalculator = quotesCalculator;
-        _portfolioDistribuition = portfolioDistribuition;
+        _portfolioDistribution = portfolioDistribution;
         _purchaseOrdersRepository = purchaseOrdersRepository;
         _recommendedPortfolioRepository = recommendedPortfolioRepository;
     }
@@ -35,7 +36,7 @@ public class ExecutePortfolioPurchaseHandler : IRequestHandler<ExecutePortfolioP
         if (portfolio is null)
             return Result.Fail(PortfolioErrors.NoActiveRecommendedPortfolio());
 
-        var masterAccount = await _customerRepository.GetByIdAsync(1, ct); // Master sempre vai ser o ID 1, criado na Migration Inicial
+        var masterAccount = await _customerRepository.GetMasterAccount(ct);
         if (masterAccount is null)
             return Result.Fail(BrokerageAccountErrors.NoMasterAccount());
 
@@ -58,15 +59,15 @@ public class ExecutePortfolioPurchaseHandler : IRequestHandler<ExecutePortfolioP
         if (createPurchaseOrdersResult.IsFailed)
             return Result.Fail(createPurchaseOrdersResult.Errors);
 
-        var distributeOrdersResult = await ProcessDistributionInBatch(createPurchaseOrdersResult.Value, thirdValue, portfolio.Items.ToList(), masterAccount.BrokerageAccount, ct);
-        if (distributeOrdersResult.IsFailed)
-            return Result.Fail(distributeOrdersResult.Errors);
-
+        // Save before distrbution to generate sequencial id on DB. Transactions watched by transaction Behavior with Commit and Roolback allowed
         await _purchaseOrdersRepository.AddAsync(createPurchaseOrdersResult.Value, ct);
-
         var resultSave = await _purchaseOrdersRepository.SaveAsync(ct);
         if (resultSave.IsFailed)
             return Result.Fail(resultSave.Errors);
+
+        var distributeOrdersResult = await ProcessDistributionInBatch(createPurchaseOrdersResult.Value, thirdValue, portfolio.Items.ToList(), masterAccount.BrokerageAccount, ct);
+        if (distributeOrdersResult.IsFailed)
+            return Result.Fail(distributeOrdersResult.Errors);
 
         return Result.Ok(BuildResponse(distributeOrdersResult.Value));
     }
@@ -75,22 +76,26 @@ public class ExecutePortfolioPurchaseHandler : IRequestHandler<ExecutePortfolioP
     {
         var batchSize = 1000;
         var lastId = 0L;
-        var responseDistribuitions = new List<DistributionResultDTO.Distribuitions>();
+        var responseDistributions = new List<DistributionResultDTO.Distributions>();
         var responsePurchaseOrdersPerAsset = new List<DistributionResultDTO.PurchaseOrdersPerAsset>();
         var residualFromMaster = new List<DistributionResultDTO.ResidualsFromMaster>();
+        var deliveries = new List<Delivery>();
 
         while (true)
         {
             var customersChunk = await _customerRepository.GetChunkOfCustomerAsync(batchSize, lastId, ct);
             var purchaseRoundData = new PurchaseRoundDataDTO(thirdValue, customersChunk);
 
-            var resultDistribution = _portfolioDistribuition.Distribute(purchasedAssets, purchaseRoundData, portfolio, masterAccount);
+            var resultDistribution = _portfolioDistribution.Distribute(purchasedAssets, purchaseRoundData, portfolio, masterAccount);
             if (resultDistribution.IsFailed)
                 return Result.Fail(resultDistribution.Errors);
 
-            responseDistribuitions.AddRange(resultDistribution.Value.distribuitions);
+            responseDistributions.AddRange(resultDistribution.Value.distributions);
             responsePurchaseOrdersPerAsset.AddRange(resultDistribution.Value.purchaseOrders);
             residualFromMaster.AddRange(resultDistribution.Value.ResidualsFromMasterAccount);
+            deliveries.AddRange(resultDistribution.Value.deliveries);
+            
+            await _deliveryRepository.AddAsync(resultDistribution.Value.deliveries, ct);
 
             if (customersChunk.Count < batchSize)
                 break;
@@ -98,19 +103,23 @@ public class ExecutePortfolioPurchaseHandler : IRequestHandler<ExecutePortfolioP
             lastId = customersChunk.Keys.Max();
         }
 
-        return Result.Ok(new DistributionResultDTO(responsePurchaseOrdersPerAsset, responseDistribuitions, residualFromMaster));
+        var saveResult = await _deliveryRepository.SaveAsync(ct);
+        if (saveResult.IsFailed)
+            return Result.Fail(saveResult.Errors);
+
+        return Result.Ok(new DistributionResultDTO(responsePurchaseOrdersPerAsset, responseDistributions, residualFromMaster, deliveries));
     }
 
     private ExecutePortfolioPurchaseResponse BuildResponse(DistributionResultDTO result)
     {
         var response = new ExecutePortfolioPurchaseResponse(
             ExecutionDate: DateTime.UtcNow,
-            TotalCustomers: result.distribuitions.Count,
+            TotalCustomers: result.distributions.Count,
             TotalPurchaseAmount: result.purchaseOrders.Sum(p => p.TotalPrice),
             PurchaseOrder: result.purchaseOrders,
-            Distribuitions: result.distribuitions,
+            Distributions: result.distributions,
             ResidualsUsed: result.ResidualsFromMasterAccount,
-            Message: $"Compra programada executada com sucesso para {result.distribuitions.Count} clientes.");
+            Message: $"Compra programada executada com sucesso para {result.distributions.Count} clientes.");
 
         return response;
     }

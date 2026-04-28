@@ -7,7 +7,7 @@ public record ExecutePortfolioPurchaseResponse(
     int TotalCustomers,
     decimal TotalPurchaseAmount,
     IReadOnlyCollection<PurchaseOrdersPerAsset> PurchaseOrder,
-    IReadOnlyCollection<Distribuitions> Distribuitions,
+    IReadOnlyCollection<Distributions> Distributions,
     IReadOnlyCollection<ResidualsFromMaster> ResidualsUsed,
     string Message);
 

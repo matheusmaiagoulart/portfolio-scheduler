@@ -1,4 +1,5 @@
 ﻿namespace PortfolioScheduler.Domain.Entities;
+
 public class Delivery
 {
     public long Id { get; }
@@ -11,14 +12,18 @@ public class Delivery
 
     protected Delivery() { }
 
-    public Delivery(long purchaseOrderId, long custodyCustomerId, string ticker, int quantity, decimal unitPrice)
+    private Delivery (long purchaseOrderId, long custodyCustomerId, string ticker, int quantity, decimal unitPrice)
     {
         PurchaseOrderId = purchaseOrderId;
         CustodyCustomerId = custodyCustomerId;
         Ticker = ticker;
         Quantity = quantity;
-        Quantity = quantity;
         UnitPrice = unitPrice;
         DeliveryDate = DateTime.Now;
+    }
+
+    public static Delivery CreateDelivery (long purchaseOrderId, long custodyCustomerId, string ticker, int quantity, decimal unitPrice)
+    {
+        return new Delivery(purchaseOrderId, custodyCustomerId, ticker, quantity, unitPrice);
     }
 }

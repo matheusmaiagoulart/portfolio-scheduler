@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace PortfolioScheduler.Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class CreateInitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +50,24 @@ namespace PortfolioScheduler.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PortfolioRebalances",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<long>(type: "bigint", nullable: false),
+                    RebalanceType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SoldTicker = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    BoughtTicker = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    SaleAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    RebalanceDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PortfolioRebalances", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PurchaseOrders",
                 columns: table => new
                 {
@@ -82,6 +102,24 @@ namespace PortfolioScheduler.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TaxEvents",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<long>(type: "bigint", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BaseValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IsSent = table.Column<bool>(type: "bit", nullable: false),
+                    EventDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaxEvents", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "BrokerageAccounts",
                 columns: table => new
                 {
@@ -100,53 +138,29 @@ namespace PortfolioScheduler.Infra.Migrations
                         column: x => x.CustomerId,
                         principalTable: "Customers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PortfolioRebalances",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<long>(type: "bigint", nullable: false),
-                    RebalanceType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SoldTicker = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    BoughtTicker = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    SaleAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RebalanceDate = table.Column<DateTime>(type: "datetime", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PortfolioRebalances", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PortfolioRebalances_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TaxEvents",
+                name: "Deliveries",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<long>(type: "bigint", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BaseValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsSent = table.Column<bool>(type: "bit", nullable: false),
-                    EventDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    PurchaseOrderId = table.Column<long>(type: "bigint", nullable: false),
+                    CustodyCustomerId = table.Column<long>(type: "bigint", nullable: false),
+                    Ticker = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DeliveryDate = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TaxEvents", x => x.Id);
+                    table.PrimaryKey("PK_Deliveries", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TaxEvents_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customers",
+                        name: "FK_Deliveries_PurchaseOrders_PurchaseOrderId",
+                        column: x => x.PurchaseOrderId,
+                        principalTable: "PurchaseOrders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -195,34 +209,26 @@ namespace PortfolioScheduler.Infra.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Deliveries",
-                columns: table => new
+            migrationBuilder.InsertData(
+                table: "Customers",
+                columns: new[] { "Id", "Active", "Cpf", "Email", "JoiningDate", "MonthlyAmount", "Name" },
+                values: new object[] { 1L, true, "00000000000", "master@itaucorretora.com.br", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0m, "CORRETORA - CONTA MASTER" });
+
+            migrationBuilder.InsertData(
+                table: "BrokerageAccounts",
+                columns: new[] { "Id", "AccountNumber", "AccountType", "CreatedAt", "CustomerId" },
+                values: new object[] { 1L, "MASTER-ACCOUNT-0001", "MASTER", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1L });
+
+            migrationBuilder.InsertData(
+                table: "Custodies",
+                columns: new[] { "Id", "AveragePrice", "BrokerageAccountId", "LastUpdate", "Quantity", "Ticker" },
+                values: new object[,]
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PurchaseOrderId = table.Column<long>(type: "bigint", nullable: false),
-                    CustodyCustomerId = table.Column<long>(type: "bigint", nullable: false),
-                    Ticker = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DeliveryDate = table.Column<DateTime>(type: "datetime", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Deliveries", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Deliveries_Custodies_CustodyCustomerId",
-                        column: x => x.CustodyCustomerId,
-                        principalTable: "Custodies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Deliveries_PurchaseOrders_PurchaseOrderId",
-                        column: x => x.PurchaseOrderId,
-                        principalTable: "PurchaseOrders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    { 1L, 0m, 1L, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, "PETR4" },
+                    { 2L, 0m, 1L, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, "VALE3" },
+                    { 3L, 0m, 1L, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, "ITUB4" },
+                    { 4L, 0m, 1L, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, "BBDC4" },
+                    { 5L, 0m, 1L, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, "WEGE3" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -249,8 +255,7 @@ namespace PortfolioScheduler.Infra.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_Active",
                 table: "Customers",
-                column: "Active",
-                unique: true);
+                column: "Active");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_Cpf",
@@ -313,6 +318,9 @@ namespace PortfolioScheduler.Infra.Migrations
                 name: "AssetPrices");
 
             migrationBuilder.DropTable(
+                name: "Custodies");
+
+            migrationBuilder.DropTable(
                 name: "Deliveries");
 
             migrationBuilder.DropTable(
@@ -325,16 +333,13 @@ namespace PortfolioScheduler.Infra.Migrations
                 name: "TaxEvents");
 
             migrationBuilder.DropTable(
-                name: "Custodies");
+                name: "BrokerageAccounts");
 
             migrationBuilder.DropTable(
                 name: "PurchaseOrders");
 
             migrationBuilder.DropTable(
                 name: "RecommendedPortfolios");
-
-            migrationBuilder.DropTable(
-                name: "BrokerageAccounts");
 
             migrationBuilder.DropTable(
                 name: "Customers");

@@ -6,18 +6,19 @@ using static PortfolioScheduler.Domain.Services.DTOs.DistributionResultDTO;
 
 namespace PortfolioScheduler.Domain.Services.Implementations;
 
-public class PortfolioDistribuition : IPortfolioDistribuition
+public class PortfolioDistribution : IPortfolioDistribution
 {
-    private record TickerData(int TotalQuantity, decimal AssetPrice);
+    private record TickerData(long purchaseId, int TotalQuantity, decimal AssetPrice);
 
     public Result<DistributionResultDTO> Distribute(IEnumerable<PurchaseOrder> purchasedAssets, PurchaseRoundDataDTO purchaseRoundData, List<PortfolioItem> portfolio, BrokerageAccount masterAccount)
     {
-        var responseDistribuitions = new List<DistributionResultDTO.Distribuitions>();
-
+        var responseDistributions = new List<DistributionResultDTO.Distributions>();
+        var deliveries = new List<Delivery>();
         var masterCustodyByTicker = masterAccount.Custodies.ToDictionary(c => c.Ticker);
+        
         var purchasedByTicker = purchasedAssets
             .GroupBy(p => NormalizeTickerName(p.Ticker))
-            .ToDictionary(g => g.Key, g => new TickerData(g.Sum(p => p.Quantity), g.First().UnitPrice));
+            .ToDictionary(g => g.Key, g => new TickerData(g.FirstOrDefault().Id, g.Sum(p => p.Quantity), g.First().UnitPrice));
 
         var totalQuantityPerTicker = masterAccount.Custodies
             .ToDictionary(
@@ -26,6 +27,7 @@ public class PortfolioDistribuition : IPortfolioDistribuition
            {
                var purchased = purchasedByTicker.GetValueOrDefault(c.Ticker);
                return new TickerData(
+                   purchased?.purchaseId ?? 0,
                    c.Quantity + (purchased?.TotalQuantity ?? 0),
                    purchased?.AssetPrice ?? c.AveragePrice);
            });
@@ -39,7 +41,7 @@ public class PortfolioDistribuition : IPortfolioDistribuition
         foreach (var customerData in purchaseRoundData.CustodiesPerCustomer.Values)
         {
             var proportion = customerData.ThirdPartyBalance / purchaseRoundData.TotalPurchaseAmount;
-            var assetsToCustomer = new List<DistribuitionPerAsset>();
+            var assetsToCustomer = new List<DistributionPerAsset>();
 
             foreach (var custody in customerData.CustomerCustodies)
             {
@@ -53,10 +55,11 @@ public class PortfolioDistribuition : IPortfolioDistribuition
                 custody.AddPurchaseQuantity(quantityToDistribute, tickerValue);
                 distribuitedPerTicker[custody.Ticker] += quantityToDistribute;
 
-                assetsToCustomer.Add(new DistribuitionPerAsset(custody.Ticker, quantityToDistribute));
+                assetsToCustomer.Add(new DistributionPerAsset(custody.Ticker, quantityToDistribute));
+                deliveries.Add(Delivery.CreateDelivery(totalQuantityPerTicker[custody.Ticker].purchaseId, custody.BrokerageAccountId, custody.Ticker, quantityToDistribute, tickerValue));
             }
-
-            responseDistribuitions.Add(new DistributionResultDTO.Distribuitions(
+            
+            responseDistributions.Add(new DistributionResultDTO.Distributions(
                 customerData.CustomerId,
                 customerData.FullName,
                 customerData.ThirdPartyBalance,
@@ -66,7 +69,7 @@ public class PortfolioDistribuition : IPortfolioDistribuition
         var masterResiduals = UpdateResidualsFromMasterAccount(
             distribuitedPerTicker, totalQuantityPerTicker, masterAccount);
 
-        return Result.Ok(new DistributionResultDTO(CreateResponseForAssetsPurchased(purchasedAssets, masterCustodyByTicker), responseDistribuitions, masterResiduals));
+        return Result.Ok(new DistributionResultDTO(CreateResponseForAssetsPurchased(purchasedAssets, masterCustodyByTicker), responseDistributions, masterResiduals, deliveries));
     }
 
     private string NormalizeTickerName(string ticker)

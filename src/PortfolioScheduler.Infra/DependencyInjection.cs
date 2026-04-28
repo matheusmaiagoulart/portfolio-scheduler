@@ -21,7 +21,9 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("PortfolioScheduler-Connection")));
 
         // Repositories
+        services.AddScoped<IAppDbContext, AppDbContext>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IDeliveryRepository, DeliveryRepository>();
         services.AddScoped<IAssetPricesRepository, AssetPricesRepository>();
         services.AddScoped<IPurchaseOrdersRepository, PurchaseOrdersRepository>();
         services.AddScoped<IRecommendedPortfolioRepository, RecommendedPortfolioRepository>();
@@ -31,7 +33,7 @@ public static class DependencyInjection
         // Domain Services
         services.AddScoped<IPurchaseExecutionDateValidator, PurchaseExecutionDateValidator>();
         services.AddScoped<IPurchaseQuotesCalculator, PurchaseQuotesCalculator>();
-        services.AddScoped<IPortfolioDistribuition, PortfolioDistribuition>();
+        services.AddScoped<IPortfolioDistribution, PortfolioDistribution>();
 
         return services;
     }
