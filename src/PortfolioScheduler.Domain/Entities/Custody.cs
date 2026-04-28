@@ -9,14 +9,19 @@ public class Custody
     public decimal AveragePrice { get; private set; }
     public DateTime LastUpdate { get; private set; }
 
-    protected Custody() { }
+    private Custody() { }
 
-    public Custody(string ticker, int quantity, decimal averagePrice)
+    private Custody(string ticker, int quantity, decimal averagePrice)
     {
         Ticker = ticker;
         Quantity = quantity;
         AveragePrice = averagePrice;
         LastUpdate = DateTime.UtcNow;
+    }
+
+    public static Custody Create(string ticker)
+    {
+        return new Custody(ticker, 0, 0);
     }
 
     public void AddPurchaseQuantity(int quantity, decimal newPrice)
