@@ -1,19 +1,21 @@
-﻿using static PortfolioScheduler.Domain.Services.DTOs.DistributionResultDTO;
+﻿using PortfolioScheduler.Domain.Entities;
+using static PortfolioScheduler.Domain.Services.DTOs.DistributionResultDTO;
 
 namespace PortfolioScheduler.Domain.Services.DTOs;
 
 public record DistributionResultDTO(
     IReadOnlyCollection<PurchaseOrdersPerAsset> purchaseOrders,
-    IReadOnlyList<Distribuitions> distribuitions,
-    List<ResidualsFromMaster> ResidualsFromMasterAccount)
+    IReadOnlyList<Distributions> distributions,
+    List<ResidualsFromMaster> ResidualsFromMasterAccount,
+    ICollection<Delivery> deliveries)
 {
-    public record Distribuitions(
+    public record Distributions(
         long CustomerId,
         string FullName,
         decimal ThirdPartyBalance,
-        IEnumerable<DistribuitionPerAsset> DistribuitionsPerAsset
+        IEnumerable<DistributionPerAsset> DistributionsPerAsset
     );
-    public record DistribuitionPerAsset(
+    public record DistributionPerAsset(
        string Ticker,
        int Quantity
     );
