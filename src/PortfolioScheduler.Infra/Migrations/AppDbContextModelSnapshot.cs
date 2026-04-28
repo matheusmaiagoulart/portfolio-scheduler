@@ -22,7 +22,7 @@ namespace PortfolioScheduler.Infra.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.AssetPrices", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.AssetPrices", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -58,7 +58,7 @@ namespace PortfolioScheduler.Infra.Migrations
                     b.ToTable("AssetPrices", (string)null);
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.BrokerageAccount", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.BrokerageAccount", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -91,9 +91,19 @@ namespace PortfolioScheduler.Infra.Migrations
                         .HasDatabaseName("IX_BrokerageAccounts_CustomerId");
 
                     b.ToTable("BrokerageAccounts", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            AccountNumber = "MASTER-ACCOUNT-0001",
+                            AccountType = "MASTER",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CustomerId = 1L
+                        });
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.Custody", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.Custody", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -124,9 +134,56 @@ namespace PortfolioScheduler.Infra.Migrations
                         .HasDatabaseName("IX_Custodies_BrokerageAccountId");
 
                     b.ToTable("Custodies");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            AveragePrice = 0m,
+                            BrokerageAccountId = 1L,
+                            LastUpdate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Quantity = 0,
+                            Ticker = "PETR4"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            AveragePrice = 0m,
+                            BrokerageAccountId = 1L,
+                            LastUpdate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Quantity = 0,
+                            Ticker = "VALE3"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            AveragePrice = 0m,
+                            BrokerageAccountId = 1L,
+                            LastUpdate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Quantity = 0,
+                            Ticker = "ITUB4"
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            AveragePrice = 0m,
+                            BrokerageAccountId = 1L,
+                            LastUpdate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Quantity = 0,
+                            Ticker = "BBDC4"
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            AveragePrice = 0m,
+                            BrokerageAccountId = 1L,
+                            LastUpdate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Quantity = 0,
+                            Ticker = "WEGE3"
+                        });
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.Customer", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.Customer", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -174,9 +231,21 @@ namespace PortfolioScheduler.Infra.Migrations
                         .HasDatabaseName("IX_Customers_Email");
 
                     b.ToTable("Customers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Active = true,
+                            Cpf = "00000000000",
+                            Email = "master@itaucorretora.com.br",
+                            JoiningDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            MonthlyAmount = 0m,
+                            Name = "CORRETORA - CONTA MASTER"
+                        });
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.Delivery", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.Delivery", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -215,7 +284,7 @@ namespace PortfolioScheduler.Infra.Migrations
                     b.ToTable("Deliveries", (string)null);
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.PortfolioItem", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.PortfolioItem", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -240,7 +309,7 @@ namespace PortfolioScheduler.Infra.Migrations
                     b.ToTable("PortfolioItems", (string)null);
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.PortfolioRebalance", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.PortfolioRebalance", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -279,7 +348,7 @@ namespace PortfolioScheduler.Infra.Migrations
                     b.ToTable("PortfolioRebalances", (string)null);
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.PurchaseOrder", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.PurchaseOrder", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -319,7 +388,7 @@ namespace PortfolioScheduler.Infra.Migrations
                     b.ToTable("PurchaseOrders", (string)null);
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.RecommendedPortfolio", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.RecommendedPortfolio", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -346,7 +415,7 @@ namespace PortfolioScheduler.Infra.Migrations
                     b.ToTable("RecommendedPortfolios", (string)null);
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.TaxEvent", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.TaxEvent", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -385,59 +454,59 @@ namespace PortfolioScheduler.Infra.Migrations
                     b.ToTable("TaxEvents", (string)null);
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.BrokerageAccount", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.BrokerageAccount", b =>
                 {
-                    b.HasOne("PortfolioScheduler.Domain.Models.Customer", null)
+                    b.HasOne("PortfolioScheduler.Domain.Entities.Customer", null)
                         .WithOne("BrokerageAccount")
-                        .HasForeignKey("PortfolioScheduler.Domain.Models.BrokerageAccount", "CustomerId")
+                        .HasForeignKey("PortfolioScheduler.Domain.Entities.BrokerageAccount", "CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.Custody", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.Custody", b =>
                 {
-                    b.HasOne("PortfolioScheduler.Domain.Models.BrokerageAccount", null)
+                    b.HasOne("PortfolioScheduler.Domain.Entities.BrokerageAccount", null)
                         .WithMany("Custodies")
                         .HasForeignKey("BrokerageAccountId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.Delivery", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.Delivery", b =>
                 {
-                    b.HasOne("PortfolioScheduler.Domain.Models.PurchaseOrder", null)
+                    b.HasOne("PortfolioScheduler.Domain.Entities.PurchaseOrder", null)
                         .WithMany("Deliveries")
                         .HasForeignKey("PurchaseOrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.PortfolioItem", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.PortfolioItem", b =>
                 {
-                    b.HasOne("PortfolioScheduler.Domain.Models.RecommendedPortfolio", null)
+                    b.HasOne("PortfolioScheduler.Domain.Entities.RecommendedPortfolio", null)
                         .WithMany("Items")
                         .HasForeignKey("RecommendedPortfolioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.BrokerageAccount", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.BrokerageAccount", b =>
                 {
                     b.Navigation("Custodies");
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.Customer", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.Customer", b =>
                 {
                     b.Navigation("BrokerageAccount")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.PurchaseOrder", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.PurchaseOrder", b =>
                 {
                     b.Navigation("Deliveries");
                 });
 
-            modelBuilder.Entity("PortfolioScheduler.Domain.Models.RecommendedPortfolio", b =>
+            modelBuilder.Entity("PortfolioScheduler.Domain.Entities.RecommendedPortfolio", b =>
                 {
                     b.Navigation("Items");
                 });
