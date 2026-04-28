@@ -32,25 +32,10 @@ public class CustomerRepository : ICustomerRepository
     public async Task<decimal> GetOneThirdAmountOfAllActiveCustomersAsync(CancellationToken ct)
     {
         var customers = await _context.Customers
-        .Where(c => c.Active && c.BrokerageAccount.Id != 1)
-        .Include(c => c.BrokerageAccount)
-        .ThenInclude(b => b.Custodies)
-        .ToListAsync(ct);
+        .Where(c => c.Active && c.Id != 1)
+        .Select(c => c.MonthlyAmount).SumAsync(ct);
 
-        return Math.Round(customers.Sum(c => c.MonthlyAmount) / 3m, 2);
-
-        //var custodiesPerCustomer = customers.ToDictionary(
-        //    keySelector: c => c.BrokerageAccount.Id,
-        //    elementSelector: c => new CustodyPurchaseDataDTO
-        //    {
-        //        CustomerId = c.Id,
-        //        FullName = c.Name,
-        //        BrokerageAccountId = c.BrokerageAccount.Id,
-        //        ThirdPartyBalance = Math.Round(c.MonthlyAmount / 3m, 2),
-        //        CustomerCustodies = c.BrokerageAccount.Custodies
-        //    });
-
-        //return new PurchaseRoundDataDTO(thridOfTotalAmount);
+        return Math.Round(customers / 3m, 2);
     }
     
     public async Task<Dictionary<long, CustodyPurchaseDataDTO>> GetChunkOfCustomerAsync(int chunkSize, long lastId, CancellationToken ct)
@@ -100,5 +85,13 @@ public class CustomerRepository : ICustomerRepository
     public void Update(Customer customer)
     {
         _context.Customers.Update(customer);
+    }
+
+    public async Task<Customer> GetMasterAccount(CancellationToken ct)
+    {
+        return await _context.Customers
+            .Include(c => c.BrokerageAccount)
+            .ThenInclude(b => b.Custodies)
+            .FirstOrDefaultAsync(c => c.BrokerageAccount.AccountType == BrokerageAccountType.MASTER, ct);
     }
 }
