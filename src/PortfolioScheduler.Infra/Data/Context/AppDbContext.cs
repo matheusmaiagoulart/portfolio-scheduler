@@ -1,10 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using PortfolioScheduler.Domain.Entities;
+using PortfolioScheduler.Domain.Repositories;
 
 namespace PortfolioScheduler.Infra.Data.Context
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : DbContext, IAppDbContext
     {
+        private IDbContextTransaction? _currentTransaction;
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -22,5 +25,24 @@ namespace PortfolioScheduler.Infra.Data.Context
         public DbSet<PortfolioRebalance> PortfolioRebalances { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<TaxEvent> TaxEvents { get; set; }
+
+        public async Task BeginTransactionAsync(CancellationToken ct = default)
+        {
+            _currentTransaction = await Database.BeginTransactionAsync(ct);
+        }
+
+        public async Task CommitAsync(CancellationToken ct = default)
+        {
+            await _currentTransaction.CommitAsync(ct);
+            await _currentTransaction.DisposeAsync();
+            _currentTransaction = null;
+        }
+
+        public async Task RollbackAsync(CancellationToken ct = default)
+        {
+            await _currentTransaction.RollbackAsync(ct);
+            await _currentTransaction.DisposeAsync();
+            _currentTransaction = null;
+        }
     }
 }
