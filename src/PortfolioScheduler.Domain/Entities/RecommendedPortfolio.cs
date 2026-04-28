@@ -23,7 +23,7 @@ public class RecommendedPortfolio
         TerminationDate = null;
     }
 
-    public static Result<RecommendedPortfolio> Create(string name, List<PortfolioItem> items, DateTime? terminationDate = null)
+    public static Result<RecommendedPortfolio> Create(string name, Dictionary<String, PortfolioItem> items, DateTime? terminationDate = null)
     {
         if (string.IsNullOrEmpty(name))
             return Result.Fail<RecommendedPortfolio>("Name cannot be null or empty.");
@@ -31,11 +31,14 @@ public class RecommendedPortfolio
         if (items == null || items.Count == 0 || items.Count() != 5)
             return Result.Fail<RecommendedPortfolio>("A recommended portfolio must contain exactly 5 items.");
 
-        if (items.All(x => x.Percentage == 0) || items.Sum(x => x.Percentage) != 100)
+        if (items.GroupBy(x => x.Key).Any(c => c.Count() > 1))
+            return Result.Fail<RecommendedPortfolio>("The list items had duplicated tickers.");
+
+        if (items.All(x => x.Value.Percentage == 0) || items.Sum(x => x.Value.Percentage) != 100)
             return Result.Fail<RecommendedPortfolio>("The percentage of each item must be greater than 0 and the total percentage must be equal 100.");
 
         var recommendedPortfolio = new RecommendedPortfolio(name);
-        recommendedPortfolio._portfolioItems.AddRange(items);
+        recommendedPortfolio._portfolioItems.AddRange(items.Values);
         recommendedPortfolio.TerminationDate = terminationDate;
 
         return Result.Ok(recommendedPortfolio);
