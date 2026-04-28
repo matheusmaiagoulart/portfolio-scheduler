@@ -24,7 +24,7 @@ public class Customer
         MonthlyAmount = monthlyAmount;
         Active = true;
         JoiningDate = DateTime.Now;
-        BrokerageAccount = new BrokerageAccount(BrokerageAccountType.CLIENT);
+        BrokerageAccount = BrokerageAccount.Create();
     }
 
     public static Result<Customer> Create(string name, string cpf, string email, decimal monthlyAmount)
