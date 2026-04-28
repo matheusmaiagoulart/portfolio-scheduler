@@ -15,11 +15,16 @@ public class BrokerageAccount
 
     protected BrokerageAccount() { }
 
-    public BrokerageAccount(BrokerageAccountType accountType)
+    private BrokerageAccount(BrokerageAccountType accountType)
     {
         AccountNumber = GeneratedAccountNumber();
         AccountType = accountType;
         CreatedAt = DateTime.Now;
+    }
+
+    public static BrokerageAccount Create()
+    {
+        return new BrokerageAccount(BrokerageAccountType.CLIENT);
     }
 
     public Result CreateInitialCustodies(IEnumerable<PortfolioItem> portfolioItems)
@@ -28,7 +33,7 @@ public class BrokerageAccount
             return Result.Fail("Portfolio items cannot be null or empty.");
 
         var custodies = portfolioItems
-            .Select(item => new Custody(item.Ticker, 0, 0))
+            .Select(item => Custody.Create(item.Ticker))
             .ToList();
 
         _custodies.AddRange(custodies);
