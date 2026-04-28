@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using System.Security.Cryptography.X509Certificates;
 
 namespace PortfolioScheduler.Application.Commands.CreateRecommendedPortfolio;
 
@@ -12,6 +13,7 @@ public class CreateRecommendedPortfolioValidator : AbstractValidator<CreateRecom
 
         RuleFor(x => x.PortfolioItems)
             .NotEmpty().WithMessage("Portfolio items are required.")
+            .Must(items => items.Select(x => x.Ticker).Distinct().Count() == items.Count()).WithMessage("Each portfolio item must have a unique ticker.")
             .Must(items => items.All(x => x.Percentage > 0)).WithMessage("All portfolio items must have a percentage greater than 0.")
             .Must(items => items.Sum(x => x.Percentage) == 100).WithMessage("The total percentage of all portfolio items must equal 100%.")
             .Must(items => items.Count <= 5).WithMessage("A recommended portfolio cannot have more than 5 items.");

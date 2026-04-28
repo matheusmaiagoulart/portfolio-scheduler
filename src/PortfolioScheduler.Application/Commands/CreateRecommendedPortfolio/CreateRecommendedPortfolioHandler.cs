@@ -16,7 +16,7 @@ public class CreateRecommendedPortfolioHandler : IRequestHandler<CreateRecommend
 
     public async Task<Result<CreateRecommendedPortfolioResponse>> Handle(CreateRecommendedPortfolioCommand request, CancellationToken ct)
     {
-        var portfolio = RecommendedPortfolio.Create(request.Name, request.PortfolioItems, request.TerminationDate);
+        var portfolio = RecommendedPortfolio.Create(request.Name, request.PortfolioItems.ToDictionary(x => x.Ticker), request.TerminationDate);
         if (portfolio.IsFailed)
             return Result.Fail<CreateRecommendedPortfolioResponse>(portfolio.Errors);
 
