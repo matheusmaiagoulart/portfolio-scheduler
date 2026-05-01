@@ -17,7 +17,7 @@ public class PurchaseController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpPost("/execute-purchase")]
+    [HttpPost("execute-purchase")]
     public async Task<IActionResult> ExecutePurchase(ImportStockQuotesCommand request)
     {
         var result = await _mediator.Send(request);

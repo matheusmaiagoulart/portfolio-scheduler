@@ -14,10 +14,10 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        if (_validator == null) // For handlers that don't have a body, we just skip validation
-            return await next();
-
         var result = await _validator.ValidateAsync(request, cancellationToken);
+
+        if (result == null) // For handlers that don't have a validator, we just skip validation
+            return await next();
 
         if (!result.IsValid)
             throw new ValidationException(result.Errors);

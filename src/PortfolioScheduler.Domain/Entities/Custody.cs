@@ -47,4 +47,35 @@ public class Custody
     {
        AveragePrice = (Quantity * AveragePrice + newQuantity * newPrice) / (Quantity + newQuantity);
     }
+
+    public decimal CalcPL(decimal currentPrice)
+    {
+        return (currentPrice - AveragePrice) * Quantity;
+    }
+
+    public static decimal CalcPortfolioTotalValue(IReadOnlyCollection<Custody> custodies, Dictionary<string, decimal> currentPrices)
+    {
+        return custodies.Sum(c => c.Quantity * currentPrices[c.Ticker]);
+    }
+
+    public static decimal CalcPortfolioProfitability(decimal PortfolioCurrentValue, decimal TotalInvestedAmount)
+    {
+        return ((PortfolioCurrentValue - TotalInvestedAmount) / TotalInvestedAmount) * 100;
+    }
+
+    public decimal CalcPlPercentual(decimal currentPrice)
+    {
+        if (AveragePrice == 0) return 0;
+        return ((currentPrice - AveragePrice) / AveragePrice ) * 100;
+    }
+
+    public decimal CalcCompositionPercentage (decimal currentPrice, decimal portfolioCurrentValue)
+    {
+        return ((currentPrice * Quantity) / portfolioCurrentValue) * 100;
+    }
+
+    public static decimal CalcTotalInvestedAmount(IReadOnlyCollection<Custody> custodies)
+    {
+        return custodies.Sum(c => c.Quantity * c.AveragePrice);
+    }
 }
