@@ -1,7 +1,6 @@
 ﻿using FluentResults;
 using MediatR;
 using PortfolioScheduler.Domain.Repositories;
-using System.Transactions;
 
 namespace PortfolioScheduler.Application.Behaviors;
 
