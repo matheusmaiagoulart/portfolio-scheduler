@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PortfolioScheduler.Application\PortfolioScheduler.Application.csproj" />
     <ProjectReference Include="..\PortfolioScheduler.Domain\PortfolioScheduler.Domain.csproj" />
   </ItemGroup>
 
