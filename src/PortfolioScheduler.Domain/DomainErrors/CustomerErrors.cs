@@ -10,4 +10,7 @@ public static class CustomerErrors
 
     public static Error DuplicatedEmail() =>
         new Error("A Customer with the same Email already exists.").WithMetadata("statusCode", HttpStatusCode.Conflict);
+
+    public static Error CustomerNotFound(long customerId) =>
+        new Error($"The Customer for id {customerId} was not found.").WithMetadata("statusCode", HttpStatusCode.NotFound);
 }
