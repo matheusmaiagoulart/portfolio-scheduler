@@ -16,7 +16,7 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
     {
         await _dbContext.BeginTransactionAsync(cancellationToken);
 
-        var response = await next();
+        var response = await next(cancellationToken);
         if (response.ToResult().IsFailed) 
         {
             await _dbContext.RollbackAsync(cancellationToken);

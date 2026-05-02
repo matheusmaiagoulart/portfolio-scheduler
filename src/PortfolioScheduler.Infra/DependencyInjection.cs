@@ -32,6 +32,7 @@ public static class DependencyInjection
 
         // Repositories Queries
         services.AddScoped<ICustomerReadRepository, CustomerReadRepository>();
+        services.AddScoped<IRecommendedPortfolioReadRepository, RecommendedPortfolioReadRepository>();
 
         services.AddScoped<ICotahistParser, CotahistParser>();
 
