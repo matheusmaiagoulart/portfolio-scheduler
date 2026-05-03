@@ -20,6 +20,8 @@ O PortfolioScheduler permite que clientes adiram a um plano de investimento auto
 - **Split automático lote padrão vs. mercado fracionário** (múltiplos de 100 vs. restante)
 - **Gestão de resíduos na custódia Master** — sobras mantidas para a próxima rodada
 - **Preço médio ponderado** atualizado por ativo por cliente
+- **Consulta da carteira recomendada ativa** (Top Five vigente)
+- **Consulta da carteira do cliente** — posição individual com ativos e preço médio
 
 ---
 
@@ -39,7 +41,7 @@ PortfolioScheduler/
 | Padrão | Uso |
 |--------|-----|
 | **Clean Architecture** | Separação em 4 camadas com dependências unidirecionais |
-| **CQRS** | Commands via MediatR com handlers dedicados por feature |
+| **CQRS** | Commands e Queries via MediatR com handlers dedicados por feature e read repositories isolados |
 | **DDD** | Entidades ricas com comportamento, Domain Services, Domain Errors |
 | **Repository Pattern** | Abstração de acesso a dados com EF Core |
 | **Result Pattern** | FluentResults para tratamento de erros sem exceções |
@@ -170,9 +172,10 @@ Download em: [Cotações Históricas B3](https://www.b3.com.br/pt_br/market-data
 | Gestão de resíduos na Master | ✅ |
 | Preço médio ponderado | ✅ |
 | Batch processing (escalabilidade) | ✅ |
+| Consulta da carteira recomendada ativa | ✅ |
+| Consulta de carteira do cliente | ✅ |
 | IR dedo-duro (Kafka) | 🟡 Planejado |
 | Rebalanceamento de carteira | 🟡 Planejado |
-| Consulta de carteira do cliente | 🟡 Planejado |
 | Testes unitários (70%+ cobertura) | 🟡 Planejado |
 | Docker Compose | 🟡 Planejado |
 
@@ -188,20 +191,21 @@ src/
 │   └── Middlewares/            # Tratamento de exceções
 │
 ├── PortfolioScheduler.Application/
-│   ├── Commands/               # Comandos CQRS + Handlers
-│   ├── Behaviors/              # Pipeline MediatR (Validação, Transação)
-│   └── Validators/             # Regras FluentValidation
+│   ├── Commands/               # Comandos CQRS (write) + Handlers + Validators
+│   ├── Queries/                # Queries CQRS (read) + Handlers + Contracts (read repos)
+│   └── Behaviors/              # Pipeline MediatR (Validação, Transação)
 │
 ├── PortfolioScheduler.Domain/
 │   ├── Entities/               # Entidades ricas de domínio
-│   ├── Repositories/           # Interfaces de repositório
-│   ├── Services/               # Domain Services (interfaces + implementações)
+│   ├── Repositories/           # Interfaces de repositório (write side)
+│   ├── Services/               # Domain Services (interfaces + implementações + DTOs)
 │   ├── DomainErrors/           # Definições centralizadas de erros
-│   └── Services/DTOs/          # Objetos de transferência de domínio
+│   └── Utils/                  # Extensions e utilitários de domínio
 │
 └── PortfolioScheduler.Infra/
     ├── Data/                   # EF Core DbContext, Migrations, Mappings
-    ├── Persistence/            # Implementações de repositório
+    ├── Persistence/            # Implementações de repositório (write side)
+    ├── Queries/                # Read repositories (consultas otimizadas)
     └── ExternalData/           # Parser COTAHIST da B3
 ```
 
