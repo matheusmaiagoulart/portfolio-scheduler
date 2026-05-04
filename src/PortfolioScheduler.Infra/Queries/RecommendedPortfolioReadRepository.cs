@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PortfolioScheduler.Application.Queries.Contracts;
+using PortfolioScheduler.Application.Queries.GetAllRecommendedPortfolio;
 using PortfolioScheduler.Application.Queries.GetCurrentRecommendedPortfolio;
 using PortfolioScheduler.Infra.Data.Context;
 
@@ -41,5 +42,28 @@ public class RecommendedPortfolioReadRepository : IRecommendedPortfolioReadRepos
                 Percentage: x.Percentage,
                 ActualPrice: assetsPrice.TryGetValue(x.Ticker, out var actualPrice) ? actualPrice : 0
                 )).ToList());
+    }
+
+    public async Task<GetAllRecommendedPortfolioResponse> GetAllRecommendedPortfolioAsync(CancellationToken ct)
+    {
+        var allPortfolios = await _dbContext.RecommendedPortfolios
+            .AsNoTracking()
+            .Include(p => p.Items)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync(ct);
+
+        var response = allPortfolios.Select(portfolio =>
+        new RecommendedPortfolioDTO(
+                PortfolioId: portfolio.Id,
+                Name: portfolio.Name,
+                Active: portfolio.Active,
+                CreatedAt: portfolio.CreatedAt,
+                DisabledAt: portfolio.TerminationDate,
+                Items: portfolio.Items.Select(item =>
+                     new ItemsDTO(
+                        Ticker: item.Ticker,
+                        Percentage: item.Percentage)).ToList()));
+
+        return new GetAllRecommendedPortfolioResponse(response);
     }
 }
