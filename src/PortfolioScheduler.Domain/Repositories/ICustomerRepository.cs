@@ -11,6 +11,6 @@ public interface ICustomerRepository
     Task<Customer> GetMasterAccount(CancellationToken ct);
     Task<decimal> GetOneThirdAmountOfAllActiveCustomersAsync(CancellationToken ct);
     Task<Dictionary<long, CustodyPurchaseDataDTO>> GetChunkOfCustomerAsync(int chunkSize, long lastId, CancellationToken ct);
-    void Update(Customer customer);
+    Task<Result> UpdateAsync(Customer customer, CancellationToken ct);
     Task<Result> SaveChangesAsync(CancellationToken ct);
 }

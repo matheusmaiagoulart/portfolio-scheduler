@@ -37,4 +37,12 @@ public class Customer
 
         return Result.Ok(new Customer(name, cpf, email, monthlyAmount));
     }
+
+    public Result Disable()
+    {
+        if (!Active) return Result.Fail("Customer is already disabled.");
+
+        Active = false;
+        return Result.Ok();
+    }
 }
