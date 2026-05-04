@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PortfolioScheduler.Api.Extensions;
+using PortfolioScheduler.Application.Commands.DisableCustomerSubscription;
 using PortfolioScheduler.Application.Commands.RegisterCustomerSubscriber;
 using PortfolioScheduler.Application.Queries.GetCustomerPortfolio;
 
@@ -21,6 +22,13 @@ public class CustomersController : ControllerBase
     {
         var result = await _mediator.Send(request);
         return result.ValidateResult(this, 201);
+    }
+
+    [HttpPost("{customerId}/saida")]
+    public async Task<IActionResult> RegisterCustomerSubscriber(long customerId)
+    {
+        var result = await _mediator.Send(new DisableCustomerSubscriptionCommand(customerId));
+        return result.ValidateResult(this, 200);
     }
 
     [HttpGet("{customerId}/carteira")]
