@@ -9,4 +9,10 @@ public static class PortfolioErrors
         return new Error("Nenhum portfólio recomendado ativo encontrado.")
             .WithMetadata("statusCode", 404);
     }
+
+    public static Error NoOneRecommendedPortfoliosRegistered()
+    {
+        return new Error("Nenhum portfólio recomendado registrado encontrado.")
+            .WithMetadata("statusCode", 404);
+    }
 }
