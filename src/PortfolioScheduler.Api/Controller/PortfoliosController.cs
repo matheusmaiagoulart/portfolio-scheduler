@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PortfolioScheduler.Api.Extensions;
 using PortfolioScheduler.Application.Commands.CreateRecommendedPortfolio;
+using PortfolioScheduler.Application.Queries.GetAllRecommendedPortfolio;
 using PortfolioScheduler.Application.Queries.GetCurrentRecommendedPortfolio;
 
 namespace PortfolioScheduler.Api.Controller;
@@ -28,6 +29,13 @@ public class PortfoliosController : ControllerBase
     public async Task<IActionResult> GetCurrentRecommendedPortfolio()
     {
         var result = await _mediator.Send(new GetCurrentRecommendedPortfolioQuery());
+        return result.ValidateResult(this, 200);
+    }
+
+    [HttpGet("historico")]
+    public async Task<IActionResult> GetAllRecommendedPortfolio()
+    {
+        var result = await _mediator.Send(new GetAllRecommendedPortfolioQuery());
         return result.ValidateResult(this, 200);
     }
 }
