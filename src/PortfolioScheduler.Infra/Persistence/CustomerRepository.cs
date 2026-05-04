@@ -37,7 +37,7 @@ public class CustomerRepository : ICustomerRepository
 
         return Math.Round(customers / 3m, 2);
     }
-    
+
     public async Task<Dictionary<long, CustodyPurchaseDataDTO>> GetChunkOfCustomerAsync(int chunkSize, long lastId, CancellationToken ct)
     {
         var batch = await _context.Customers
@@ -82,9 +82,18 @@ public class CustomerRepository : ICustomerRepository
         }
     }
 
-    public void Update(Customer customer)
+    public async Task<Result> UpdateAsync(Customer customer, CancellationToken ct)
     {
-        _context.Customers.Update(customer);
+        try
+        {
+            _context.Customers.Update(customer);
+            await _context.SaveChangesAsync(ct);
+            return Result.Ok();
+        }
+        catch (DbUpdateException ex)
+        {
+            return Result.Fail("An error occurred while updating the customer in the database.");
+        }
     }
 
     public async Task<Customer> GetMasterAccount(CancellationToken ct)
