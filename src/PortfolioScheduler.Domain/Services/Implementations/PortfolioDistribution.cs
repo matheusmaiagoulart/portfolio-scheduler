@@ -8,36 +8,16 @@ namespace PortfolioScheduler.Domain.Services.Implementations;
 
 public class PortfolioDistribution : IPortfolioDistribution
 {
-    private record TickerData(long purchaseId, int TotalQuantity, decimal AssetPrice);
+    private record TickerData(long PurchaseId, int TotalQuantity, decimal AssetPrice);
 
     public Result<DistributionResultDTO> Distribute(IEnumerable<PurchaseOrder> purchasedAssets, PurchaseRoundDataDTO purchaseRoundData, List<PortfolioItem> portfolio, BrokerageAccount masterAccount)
     {
         var responseDistributions = new List<DistributionResultDTO.Distributions>();
         var deliveries = new List<Delivery>();
-        var masterCustodyByTicker = masterAccount.Custodies.ToDictionary(c => c.Ticker);
-        
-        var purchasedByTicker = purchasedAssets
-            .GroupBy(p => NormalizeTickerName(p.Ticker))
-            .ToDictionary(g => g.Key, g => new TickerData(g.FirstOrDefault().Id, g.Sum(p => p.Quantity), g.First().UnitPrice));
+        var masterCustodyByTicker = GetMasterCustodyByTicker(masterAccount);
 
-        var totalQuantityPerTicker = masterAccount.Custodies
-            .ToDictionary(
-            p => NormalizeTickerName(p.Ticker),
-           c =>
-           {
-               var purchased = purchasedByTicker.GetValueOrDefault(c.Ticker);
-               return new TickerData(
-                   purchased?.purchaseId ?? 0,
-                   c.Quantity + (purchased?.TotalQuantity ?? 0),
-                   purchased?.AssetPrice ?? c.AveragePrice);
-           });
+        var (purchasedByTicker, totalQuantityPerTicker, distribuitedPerTicker) = BuilderTickerManagement(purchasedAssets, masterAccount);
 
-        var distribuitedPerTicker =
-            masterAccount.Custodies.GroupBy(c => NormalizeTickerName(c.Ticker))
-             .ToDictionary(
-                p => NormalizeTickerName(p.Key),
-                p => 0);
-        
         foreach (var customerData in purchaseRoundData.CustodiesPerCustomer.Values)
         {
             var proportion = customerData.ThirdPartyBalance / purchaseRoundData.TotalPurchaseAmount;
@@ -53,10 +33,10 @@ public class PortfolioDistribution : IPortfolioDistribution
                     continue;
 
                 custody.AddPurchaseQuantity(quantityToDistribute, tickerValue);
-                distribuitedPerTicker[custody.Ticker] += quantityToDistribute;
 
+                distribuitedPerTicker[custody.Ticker] += quantityToDistribute;
                 assetsToCustomer.Add(new DistributionPerAsset(custody.Ticker, quantityToDistribute));
-                deliveries.Add(Delivery.CreateDelivery(totalQuantityPerTicker[custody.Ticker].purchaseId, custody.BrokerageAccountId, custody.Ticker, quantityToDistribute, tickerValue));
+                deliveries.Add(Delivery.CreateDelivery(totalQuantityPerTicker[custody.Ticker].PurchaseId, custody.BrokerageAccountId, custody.Ticker, quantityToDistribute, tickerValue));
             }
             
             responseDistributions.Add(new DistributionResultDTO.Distributions(
@@ -70,6 +50,43 @@ public class PortfolioDistribution : IPortfolioDistribution
             distribuitedPerTicker, totalQuantityPerTicker, masterAccount);
 
         return Result.Ok(new DistributionResultDTO(CreateResponseForAssetsPurchased(purchasedAssets, masterCustodyByTicker), responseDistributions, masterResiduals, deliveries));
+    }
+
+    private (
+        Dictionary<string, TickerData> purchasedByTicker, 
+        Dictionary<string, TickerData> totalQuantityPerTicker, 
+        Dictionary<string, int> distribuitedPerTicker) 
+        BuilderTickerManagement(IEnumerable<PurchaseOrder> purchasedAssets, BrokerageAccount masterAccount)
+    {
+        var purchasedByTicker =
+             purchasedAssets
+             .GroupBy(p => NormalizeTickerName(p.Ticker))
+             .ToDictionary(g => g.Key, g => new TickerData(g.FirstOrDefault().Id, g.Sum(p => p.Quantity), g.First().UnitPrice));
+
+        var totalQuantityPerTicker = masterAccount.Custodies
+            .ToDictionary(
+            p => NormalizeTickerName(p.Ticker),
+           c =>
+           {
+               var purchased = purchasedByTicker.GetValueOrDefault(c.Ticker);
+               return new TickerData(
+                   purchased?.PurchaseId ?? 0,
+                   c.Quantity + (purchased?.TotalQuantity ?? 0),
+                   purchased?.AssetPrice ?? c.AveragePrice);
+           });
+
+        var distribuitedPerTicker =
+            masterAccount.Custodies.GroupBy(c => NormalizeTickerName(c.Ticker))
+             .ToDictionary(
+                p => NormalizeTickerName(p.Key),
+                p => 0);
+
+        return (purchasedByTicker, totalQuantityPerTicker, distribuitedPerTicker);  
+    }
+
+    private Dictionary<string, Custody> GetMasterCustodyByTicker(BrokerageAccount masterAccount)
+    {
+        return masterAccount.Custodies.ToDictionary(c => NormalizeTickerName(c.Ticker));
     }
 
     private string NormalizeTickerName(string ticker)
