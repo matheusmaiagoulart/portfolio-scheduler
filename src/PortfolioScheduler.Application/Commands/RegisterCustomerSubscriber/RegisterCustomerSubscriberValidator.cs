@@ -22,7 +22,7 @@ public class RegisterCustomerSubscriberValidator : AbstractValidator<RegisterCus
 
         RuleFor(x => x.MonthlyAmount)
             .NotEmpty().WithMessage("Monthly amount is required. Can't be null.")
-            .GreaterThan(100).WithMessage("The monthly amount to be invested must be greater than 100.")
+            .GreaterThanOrEqualTo(100).WithMessage("The monthly amount to be invested must be greater or qual than 100.")
             .PrecisionScale(18, 2, false).WithMessage("The monthly amount must have up to 18 digits in total, with up to 2 decimal places.");
     }
 }
