@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using PortfolioScheduler.Domain.DomainErrors;
 using PortfolioScheduler.Domain.Entities;
@@ -32,7 +33,7 @@ public class CustomerRepository : ICustomerRepository
     public async Task<decimal> GetOneThirdAmountOfAllActiveCustomersAsync(CancellationToken ct)
     {
         var customers = await _context.Customers
-        .Where(c => c.Active && c.Id != 1)
+        .Where(c => c.Active && c.BrokerageAccount.AccountType != BrokerageAccountType.MASTER)
         .Select(c => c.MonthlyAmount).SumAsync(ct);
 
         return Math.Round(customers / 3m, 2);
@@ -41,7 +42,7 @@ public class CustomerRepository : ICustomerRepository
     public async Task<Dictionary<long, CustodyPurchaseDataDTO>> GetChunkOfCustomerAsync(int chunkSize, long lastId, CancellationToken ct)
     {
         var batch = await _context.Customers
-            .Where(c => c.Active && c.BrokerageAccount.Id != 1 && c.Id > lastId)
+            .Where(c => c.Active && c.BrokerageAccount.AccountType != BrokerageAccountType.MASTER && c.Id > lastId)
             .Take(chunkSize)
             .Include(c => c.BrokerageAccount)
             .ThenInclude(b => b.Custodies)
@@ -68,14 +69,15 @@ public class CustomerRepository : ICustomerRepository
             await _context.SaveChangesAsync(ct);
             return Result.Ok();
         }
-        catch (DbUpdateException ex)
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx)
         {
-            var errorMessage = ex.InnerException?.Message;
+            var errorMessage = sqlEx.Message;
+            var errorNumber = sqlEx.Number;
 
-            if (errorMessage.Contains("IX_Customers_Cpf"))
+            if (errorNumber == 2601 && errorMessage.Contains("IX_Customers_Cpf"))
                 return Result.Fail(CustomerErrors.DuplicatedCpf());
 
-            if (errorMessage.Contains("IX_Customers_Email"))
+            if (errorNumber == 2601 && errorMessage.Contains("IX_Customers_Email"))
                 return Result.Fail(CustomerErrors.DuplicatedEmail());
 
             return Result.Fail("An error occurred while saving changes to the database.");
