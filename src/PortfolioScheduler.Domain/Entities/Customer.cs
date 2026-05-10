@@ -31,6 +31,8 @@ public class Customer
     {
         if (string.IsNullOrWhiteSpace(name)) return Result.Fail("Name can't be null.");
 
+        if (string.IsNullOrWhiteSpace(email)) return Result.Fail("Email can't be null.");
+
         if (string.IsNullOrWhiteSpace(cpf)) return Result.Fail("CPF can't be null.");
 
         if (monthlyAmount.CompareTo(new Decimal(100)) < 0) return Result.Fail("Monthly amount must be greater than 100.");
