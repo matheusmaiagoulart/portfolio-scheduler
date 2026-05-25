@@ -47,4 +47,16 @@ public class Customer
         Active = false;
         return Result.Ok();
     }
+
+    public Result UpdateMonthlyAmount(decimal amount)
+    {
+        if (amount.CompareTo(new Decimal(100)) < 0) 
+            return Result.Fail("Monthly amount must be greater or equal than 100.");
+
+        if(!Active) 
+            return Result.Fail("Customer is disabled.");
+
+        MonthlyAmount = amount;
+        return Result.Ok();
+    }
 }
