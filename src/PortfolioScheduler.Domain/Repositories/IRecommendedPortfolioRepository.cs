@@ -7,7 +7,7 @@ public interface IRecommendedPortfolioRepository
 {
     Task AddAsync(RecommendedPortfolio recommendedPortfolio, CancellationToken ct);
     Task<RecommendedPortfolio> GetByIdAsync(long id, CancellationToken ct);
-    Task<RecommendedPortfolio> GetRecommendedPortfolioActive (CancellationToken ct);
+    Task<RecommendedPortfolio> GetActivePortfolioAsync(CancellationToken ct);
     void Update(RecommendedPortfolio recommendedPortfolio);
     Task<Result> SaveChangesAsync(long portfolioId, CancellationToken ct);
 }

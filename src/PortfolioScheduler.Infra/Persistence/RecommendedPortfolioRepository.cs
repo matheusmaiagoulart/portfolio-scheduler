@@ -24,7 +24,7 @@ public class RecommendedPortfolioRepository : IRecommendedPortfolioRepository
         return await _context.RecommendedPortfolios.FindAsync(id, ct);
     }
 
-    public async Task<RecommendedPortfolio> GetRecommendedPortfolioActive(CancellationToken ct)
+    public async Task<RecommendedPortfolio> GetActivePortfolioAsync(CancellationToken ct)
     {
         return await _context.RecommendedPortfolios
             .Include(x => x.Items)
