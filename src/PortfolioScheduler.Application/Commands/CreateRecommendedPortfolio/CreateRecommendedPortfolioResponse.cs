@@ -12,19 +12,19 @@ public class CreateRecommendedPortfolioResponse
     public bool RebalanceTriggered { get; private set; }
     public string Message { get; private set; }
 
-    private CreateRecommendedPortfolioResponse(RecommendedPortfolio recommendedPortfolio)
+    private CreateRecommendedPortfolioResponse(RecommendedPortfolio recommendedPortfolio, bool rebalancingActivated)
     {
         Id = recommendedPortfolio.Id;
         Name = recommendedPortfolio.Name;
         Active = recommendedPortfolio.Active;
         CreatedAt = recommendedPortfolio.CreatedAt;
         PortfolioItems = recommendedPortfolio.Items.Select(PortfolioItemResponse.PortfolioItemFromDomain).ToList();
-        RebalanceTriggered = false;
+        RebalanceTriggered = rebalancingActivated;
     }
 
-    public static CreateRecommendedPortfolioResponse SuccessfullyCreated(RecommendedPortfolio recommendedPortfolio)
+    public static CreateRecommendedPortfolioResponse SuccessfullyCreated(RecommendedPortfolio recommendedPortfolio, bool rebalancingActivated)
     {
-        return new CreateRecommendedPortfolioResponse(recommendedPortfolio)
+        return new CreateRecommendedPortfolioResponse(recommendedPortfolio, rebalancingActivated)
         {
             Message = "Recommended portfolio created successfully."
         };
