@@ -35,7 +35,7 @@ public class ImportStockQuotesHandler : IRequestHandler<ImportStockQuotesCommand
                 .WithMetadata("statusCode", 404));
         }
 
-        var portofolio = await _recommendedPortfolioRepository.GetRecommendedPortfolioActive(ct);
+        var portofolio = await _recommendedPortfolioRepository.GetActivePortfolioAsync(ct);
         if (portofolio is null || !portofolio.Items.Any())
             return Result.Fail(PortfolioErrors.NoActiveRecommendedPortfolio());
 

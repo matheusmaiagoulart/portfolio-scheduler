@@ -6,5 +6,6 @@ namespace PortfolioScheduler.Domain.Services.Interfaces;
 public interface ICotahistParser
 {
     IEnumerable<QuoteDTO> ParseArquivo(HashSet<string> tickers, string caminhoArquivo);
+    IEnumerable<QuoteDTO> GetTickerByLastCotahist(HashSet<string> tickers);
     Result<string> ExistsCotahist(DateOnly referenceDate);
 }

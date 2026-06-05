@@ -13,6 +13,7 @@ public class PurchaseQuotesCalculator : IPurchaseQuotesCalculator
 
         foreach (var item in portfolio.Items)
         {
+            if (totalAmount == 0) continue;
             var assetAmount = Math.Round((item.Percentage / 100m) * totalAmount, 2);
             amountPerAsset[item.Ticker] = assetAmount;
         }
@@ -62,6 +63,8 @@ public class PurchaseQuotesCalculator : IPurchaseQuotesCalculator
         foreach (var ticker in amountPerAsset.Keys)
         {
             var quantityToBuy = amountPerAsset[ticker].QuantityToBuy;
+
+            if (quantityToBuy == 0) continue;
 
             int loteQuantity = (quantityToBuy / 100) * 100;
             int fractionalQuantity = quantityToBuy % 100;

@@ -3,26 +3,29 @@ using FluentResults;
 using PortfolioScheduler.Domain.DomainErrors;
 using PortfolioScheduler.Domain.Entities;
 using PortfolioScheduler.Domain.Repositories;
-using PortfolioScheduler.Domain.Services.DTOs;
 using PortfolioScheduler.Domain.Services.Interfaces;
+using PortfolioScheduler.Application.Services.Interfaces;
 
 namespace PortfolioScheduler.Application.Commands.ExecutePortfolioPurchase;
 
 public class ExecutePortfolioPurchaseHandler : IRequestHandler<ExecutePortfolioPurchaseCommand, Result<ExecutePortfolioPurchaseResponse>>
 {
     private readonly ICustomerRepository _customerRepository;
-    private readonly IDeliveryRepository _deliveryRepository;
-    private readonly IPortfolioDistribution _portfolioDistribution;
+    private readonly IProcessDistributionInBatch _batchDistribution;
     private readonly IPurchaseOrdersRepository _purchaseOrdersRepository;
     private readonly IPurchaseQuotesCalculator _purchaseQuotesCalculator;
     private readonly IRecommendedPortfolioRepository _recommendedPortfolioRepository;
 
-    public ExecutePortfolioPurchaseHandler(ICustomerRepository customerRepository, IPurchaseOrdersRepository purchaseOrdersRepository, IPurchaseQuotesCalculator quotesCalculator, IRecommendedPortfolioRepository recommendedPortfolioRepository, IPortfolioDistribution portfolioDistribution, IDeliveryRepository deliveryRepository)
+    public ExecutePortfolioPurchaseHandler(
+        ICustomerRepository customerRepository,
+        IProcessDistributionInBatch batchDistribution,
+        IPurchaseOrdersRepository purchaseOrdersRepository,
+        IPurchaseQuotesCalculator purchaseQuotesCalculator,
+        IRecommendedPortfolioRepository recommendedPortfolioRepository)
     {
+        _batchDistribution = batchDistribution;
         _customerRepository = customerRepository;
-        _deliveryRepository = deliveryRepository;
-        _purchaseQuotesCalculator = quotesCalculator;
-        _portfolioDistribution = portfolioDistribution;
+        _purchaseQuotesCalculator = purchaseQuotesCalculator;
         _purchaseOrdersRepository = purchaseOrdersRepository;
         _recommendedPortfolioRepository = recommendedPortfolioRepository;
     }
@@ -32,7 +35,7 @@ public class ExecutePortfolioPurchaseHandler : IRequestHandler<ExecutePortfolioP
         if (!request.LastCotahist.Any())
             return Result.Fail(CotahistErrors.AssetsPricesIsEmpty());
 
-        var portfolio = await _recommendedPortfolioRepository.GetRecommendedPortfolioActive(ct);
+        var portfolio = await _recommendedPortfolioRepository.GetActivePortfolioAsync(ct);
         if (portfolio is null)
             return Result.Fail(PortfolioErrors.NoActiveRecommendedPortfolio());
 
@@ -65,62 +68,10 @@ public class ExecutePortfolioPurchaseHandler : IRequestHandler<ExecutePortfolioP
         if (resultSave.IsFailed)
             return Result.Fail(resultSave.Errors);
 
-        var distributeOrdersResult = await ProcessDistributionInBatch(createPurchaseOrdersResult.Value, thirdValue, portfolio.Items.ToList(), masterAccount.BrokerageAccount, ct);
+        var distributeOrdersResult = await _batchDistribution.ProcessInBatchAsync(createPurchaseOrdersResult.Value, thirdValue, portfolio.Items.ToList(), masterAccount.BrokerageAccount, ct);
         if (distributeOrdersResult.IsFailed)
             return Result.Fail(distributeOrdersResult.Errors);
 
-        return Result.Ok(BuildResponse(distributeOrdersResult.Value));
-    }
-
-    private async Task<Result<DistributionResultDTO>> ProcessDistributionInBatch(IEnumerable<PurchaseOrder> purchasedAssets, decimal thirdValue, List<PortfolioItem> portfolio, BrokerageAccount masterAccount, CancellationToken ct)
-    {
-        var batchSize = 1000;
-        var lastId = 0L;
-        var responseDistributions = new List<DistributionResultDTO.Distributions>();
-        var responsePurchaseOrdersPerAsset = new List<DistributionResultDTO.PurchaseOrdersPerAsset>();
-        var residualFromMaster = new List<DistributionResultDTO.ResidualsFromMaster>();
-        var deliveries = new List<Delivery>();
-
-        while (true)
-        {
-            var customersChunk = await _customerRepository.GetChunkOfCustomerAsync(batchSize, lastId, ct);
-            var purchaseRoundData = new PurchaseRoundDataDTO(thirdValue, customersChunk);
-
-            var resultDistribution = _portfolioDistribution.Distribute(purchasedAssets, purchaseRoundData, portfolio, masterAccount);
-            if (resultDistribution.IsFailed)
-                return Result.Fail(resultDistribution.Errors);
-
-            responseDistributions.AddRange(resultDistribution.Value.distributions);
-            responsePurchaseOrdersPerAsset.AddRange(resultDistribution.Value.purchaseOrders);
-            residualFromMaster.AddRange(resultDistribution.Value.ResidualsFromMasterAccount);
-            deliveries.AddRange(resultDistribution.Value.deliveries);
-            
-            await _deliveryRepository.AddAsync(resultDistribution.Value.deliveries, ct);
-
-            if (customersChunk.Count < batchSize)
-                break;
-
-            lastId = customersChunk.Keys.Max();
-        }
-
-        var saveResult = await _deliveryRepository.SaveAsync(ct);
-        if (saveResult.IsFailed)
-            return Result.Fail(saveResult.Errors);
-
-        return Result.Ok(new DistributionResultDTO(responsePurchaseOrdersPerAsset, responseDistributions, residualFromMaster, deliveries));
-    }
-
-    private ExecutePortfolioPurchaseResponse BuildResponse(DistributionResultDTO result)
-    {
-        var response = new ExecutePortfolioPurchaseResponse(
-            ExecutionDate: DateTime.UtcNow,
-            TotalCustomers: result.distributions.Count,
-            TotalPurchaseAmount: result.purchaseOrders.Sum(p => p.TotalPrice),
-            PurchaseOrder: result.purchaseOrders,
-            Distributions: result.distributions,
-            ResidualsUsed: result.ResidualsFromMasterAccount,
-            Message: $"Compra programada executada com sucesso para {result.distributions.Count} clientes.");
-
-        return response;
+        return Result.Ok(ExecutePortfolioPurchaseResponse.BuildResponse(distributeOrdersResult.Value));
     }
 }

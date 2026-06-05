@@ -90,4 +90,20 @@ public class CotahistParser : ICotahistParser
         }
         return Result.Ok(caminhoArquivo);
     }
+
+    public IEnumerable<QuoteDTO> GetTickerByLastCotahist(HashSet<string> tickers)
+    {
+        var path = _configuration["B3Settings:CotahistFilePath"];
+        var directory = Path.GetDirectoryName(path);
+
+
+        var lastCotahist = Directory.GetFiles(directory, "COTAHIST*.TXT")
+            .OrderByDescending(f => f)
+            .FirstOrDefault();
+
+        if (lastCotahist == null)
+            return Enumerable.Empty<QuoteDTO>();
+
+        return ParseArquivo(tickers, lastCotahist);
+    }
 }

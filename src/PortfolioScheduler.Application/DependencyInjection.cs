@@ -2,6 +2,10 @@
 using System.Reflection;
 using FluentValidation;
 using PortfolioScheduler.Application.Behaviors;
+using PortfolioScheduler.Application.Services.Interfaces;
+using PortfolioScheduler.Application.Services;
+using PortfolioScheduler.Domain.Services.Interfaces;
+using PortfolioScheduler.Domain.Services.Implementations;
 
 namespace PortfolioScheduler.Application;
 
@@ -21,6 +25,10 @@ public static class DependencyInjection
 
         // Fluent Validation
         services.AddValidatorsFromAssembly(assembly);
+
+        // Service
+        services.AddScoped<IProcessDistributionInBatch, ProcessDistributionInBatch>();
+        services.AddScoped<IPortfolioRebalancer, PortfolioRebalancer>();
 
         return services;
     }

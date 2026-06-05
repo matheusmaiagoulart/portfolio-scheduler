@@ -18,12 +18,15 @@ public class PortfolioDistribution : IPortfolioDistribution
 
         var (purchasedByTicker, totalQuantityPerTicker, distribuitedPerTicker) = BuilderTickerManagement(purchasedAssets, masterAccount);
 
+        if (purchaseRoundData.TotalPurchaseAmount == 0)
+            return Result.Ok(new DistributionResultDTO(CreateResponseForAssetsPurchased(purchasedAssets, masterCustodyByTicker), responseDistributions, new List<ResidualsFromMaster>(), deliveries));
+
         foreach (var customerData in purchaseRoundData.CustodiesPerCustomer.Values)
         {
             var proportion = customerData.ThirdPartyBalance / purchaseRoundData.TotalPurchaseAmount;
             var assetsToCustomer = new List<DistributionPerAsset>();
 
-            foreach (var custody in customerData.CustomerCustodies)
+            foreach (var custody in customerData.CustomerCustodies.Custodies)
             {
                 var tickerValue = totalQuantityPerTicker.GetValueOrDefault(custody.Ticker)?.AssetPrice ?? 0;
                 var tickerQuantity = totalQuantityPerTicker.GetValueOrDefault(custody.Ticker)?.TotalQuantity ?? 0;
