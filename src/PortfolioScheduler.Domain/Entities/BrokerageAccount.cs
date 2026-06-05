@@ -45,6 +45,17 @@ public class BrokerageAccount
     {
         return Guid.NewGuid().ToString().Substring(0, 20).ToUpper();
     }
+
+    public Custody GetOrCreateCustody(string ticker)
+    {
+        var custody = _custodies.FirstOrDefault(c => c.Ticker == ticker);
+        if (custody == null)
+        {
+            custody = Custody.Create(ticker);
+            _custodies.Add(custody);
+        }
+        return custody;
+    }
 }
 
 public enum BrokerageAccountType
