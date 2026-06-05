@@ -56,7 +56,7 @@ public class CustomerRepository : ICustomerRepository
                 FullName = c.Name,
                 BrokerageAccountId = c.BrokerageAccount.Id,
                 ThirdPartyBalance = Math.Round(c.MonthlyAmount / 3m, 2),
-                CustomerCustodies = c.BrokerageAccount.Custodies
+                CustomerCustodies = c.BrokerageAccount
             });
 
         return custodiesPerCustomer;

@@ -28,8 +28,8 @@ public class DeliveryRepository : IDeliveryRepository
         }
         catch (Exception ex)
         {
-            // Log the exception here
-            return Result.Fail(ex.Message);
+            var innerMessage = ex.InnerException?.Message ?? ex.Message;
+            return Result.Fail($"{ex.Message} | Inner: {innerMessage}");
         }
     }
 }
