@@ -12,5 +12,5 @@ public record CustodyPurchaseDataDTO
     public string FullName { get; init; }
     public long BrokerageAccountId { get; init; }
     public decimal ThirdPartyBalance { get; init; }
-    public IEnumerable<Custody> CustomerCustodies { get; init; }
+    public BrokerageAccount CustomerCustodies { get; init; }
 }
