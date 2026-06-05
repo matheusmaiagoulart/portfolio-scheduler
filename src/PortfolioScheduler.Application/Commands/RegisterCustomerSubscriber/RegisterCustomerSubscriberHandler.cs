@@ -21,13 +21,13 @@ public class RegisterCustomerSubscriberHandler : IRequestHandler<RegisterCustome
         if (customer.IsFailed)
             return Result.Fail(customer.Errors);
 
-        var activePortfolio = await _recommendedPortfolioRepository.GetRecommendedPortfolioActive(ct);
-        if (activePortfolio != null)
-        {
-            var result = customer.Value.BrokerageAccount.CreateInitialCustodies(activePortfolio.Items);
-            if (result.IsFailed)
-                return Result.Fail(result.Errors);
-        }
+        var activePortfolio = await _recommendedPortfolioRepository.GetActivePortfolioAsync(ct);
+        if (activePortfolio == null)
+            return Result.Fail("Não é possível cadastrar cliente sem uma cesta de recomendação ativa.");
+
+        var result = customer.Value.BrokerageAccount.CreateInitialCustodies(activePortfolio.Items);
+        if (result.IsFailed)
+            return Result.Fail(result.Errors);
 
         await _customerRepository.AddAsync(customer.Value, ct);
 
