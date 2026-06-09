@@ -1,0 +1,3 @@
+﻿namespace PortfolioScheduler.Application.Commands.UpdateMontlhyAmount;
+
+public record UpdateMonthlyAmountRequest(decimal NewMonthlyAmount);

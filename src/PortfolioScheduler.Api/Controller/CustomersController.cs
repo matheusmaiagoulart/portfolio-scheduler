@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PortfolioScheduler.Api.Extensions;
 using PortfolioScheduler.Application.Commands.DisableCustomerSubscription;
 using PortfolioScheduler.Application.Commands.RegisterCustomerSubscriber;
+using PortfolioScheduler.Application.Commands.UpdateMontlhyAmount;
 using PortfolioScheduler.Application.Queries.GetCustomerPortfolio;
 
 namespace PortfolioScheduler.Api.Controller;
@@ -36,6 +37,13 @@ public class CustomersController : ControllerBase
     {
         var request = new GetCustomerPortfolioQuery(customerId);
         var result = await _mediator.Send(request);
+        return result.ValidateResult(this, 200);
+    }
+
+    [HttpPut("{customerId}/valor-mensal")]
+    public async Task<IActionResult> UpdateCustomerMonthlyAmount(long customerId, UpdateMonthlyAmountRequest request)
+    {
+        var result = await _mediator.Send(new UpdateMonthlyAmountCommand(customerId, request.NewMonthlyAmount));
         return result.ValidateResult(this, 200);
     }
 }
